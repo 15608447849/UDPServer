@@ -2,6 +2,7 @@ package server.imps;
 
 import server.beans.*;
 import utils.Command;
+import utils.LOG;
 
 import javax.swing.text.html.parser.Entity;
 import java.net.InetAddress;
@@ -89,6 +90,7 @@ public class ServerOps extends HashSet implements CheckThread.Action{
                client = itr.next();
                if (client.macAddress.equalsIgnoreCase(cMac)){
                    client.state = state;
+                   LOG.E(client.toString());
                }
             }
         }finally {
@@ -97,8 +99,9 @@ public class ServerOps extends HashSet implements CheckThread.Action{
     }
     //通知除指定mac外的所有 空闲用户
     public void notifyAllClientMessage(DatagramChannel channel, String cMac, byte type, String message) {
-                try{
+        try{
             lock.lock();
+            LOG.I("通知所有人 - "+message);
             Iterator<UdpClient> itr = iterator();
             UdpClient client;
             while (itr.hasNext()){
@@ -106,11 +109,12 @@ public class ServerOps extends HashSet implements CheckThread.Action{
                if (client.macAddress.equalsIgnoreCase(cMac)){
                    continue;
                }else{
-                   if (client.state == 0){
+                   if (client.state == 0){ //空闲的
                        Command.sendMessage(channel,new InetSocketAddress(client.inetAddress,client.inetPort),type,message,null);
                    }
                }
             }
+            LOG.I("通知所有人 - "+message + " 完毕");
         }finally {
             lock.unlock();
         }
@@ -171,7 +175,8 @@ public class ServerOps extends HashSet implements CheckThread.Action{
            UdpClient client;
             while (itr.hasNext()){
               client =  itr.next();
-              if (client.macAddress.equalsIgnoreCase(mac)){
+              LOG.I(client+" - "+mac);
+              if (client.macAddress.equalsIgnoreCase(mac) && client.state==1){//请求中
                   client.dataPort = dataPort;
                   return client;
               }

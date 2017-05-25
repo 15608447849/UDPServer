@@ -60,11 +60,10 @@ public class ClientImps {
         if (info == null) throw new NullPointerException("client into is null.");
         try {
             selector = Selector.open();
-//            messageSocket = new DatagramSocket(info.localPort, info.localIp);
             commChannel = DatagramChannel.open();
             commChannel.configureBlocking(false);
-            commChannel.socket().bind(new InetSocketAddress(info.localPort));//关联自己的端口
-            commChannel.register(selector, SelectionKey.OP_READ);
+            commChannel.socket().bind(new InetSocketAddress(info.localIp,info.localPort));//关联自己的端口
+            commChannel.register(selector, SelectionKey.OP_READ);//注册
             threadMap.put("receiveThread",new receiveServerMessage(this)); //接受消息线程
             threadMap.put("keepAliveThread",new KeepConnect(this));//心跳
             //循环开始所有的线程
@@ -89,6 +88,7 @@ public class ClientImps {
         String message = info.macAddress+Command.SEPARATOR+source+Command.SEPARATOR+state;
         //发送消息到服务器
         Command.sendMessage(commChannel,new InetSocketAddress(info.serverIp,info.serverPort),Command.CLIENT_SERVER_QUESY_SOURCE,message,null);
+        LOG.I("请求资源 - "+Command.CLIENT_SERVER_QUESY_SOURCE+" "+message);
         //开启一个线程,尝试和服务器建立连接
         try {
             DataConnect dCon =  new DataConnect(this);

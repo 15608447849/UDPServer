@@ -49,6 +49,8 @@ public class UdpClient {
         sb.append("[ mac = "+ macAddress);
         sb.append("; netIp = "+ inetAddress);
         sb.append("; netPort = "+ inetPort);
+        sb.append("; dataport = "+ dataPort);
+        sb.append("; state = "+ state);
         sb.append("]");
         return sb.toString();
     }

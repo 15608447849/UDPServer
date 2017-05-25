@@ -66,8 +66,9 @@ public class ServerImps{
             connChannel.configureBlocking(false);
             connChannel.bind(new InetSocketAddress(server.localIp,server.socket2port));
             connChannel.register(selector, SelectionKey.OP_READ);
+
             new ServerReceiver(this).start();
-            LOG.I("P2P中转服务器启动成功 ,IP : "+ server.localIp +", 交互端口号 :"+server.socketPort +" 通道搭建端口 : "+server.socket2port);
+            LOG.I("P2P中转服务器启动成功 ,IP : "+ server.localIp +", 交互端口号 :"+commChannel +" 通道搭建端口 : "+connChannel);
         } catch (Exception e) {
             e.printStackTrace();
         }

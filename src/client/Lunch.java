@@ -15,11 +15,9 @@ public class Lunch {
     public static void clien(){
         try {
         String mip = NetUtil.getLocalIP();
-//        int port1 = 5000;
-//        int port2 = 6000;
+        int port1 = 5000;
+        int port2 = 6000;
 
-            int port1 = 3434;
-            int port2 = 2555;
 //            开启一个文件请求
             startFileQ();
 

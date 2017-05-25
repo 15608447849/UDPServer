@@ -3,6 +3,7 @@ package client.threads.imps;
 import client.imps.ClientImps;
 import client.threads.ClientThread;
 import utils.Command;
+import utils.LOG;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
@@ -19,6 +20,7 @@ public class KeepConnect extends ClientThread {
         //制作心跳数据
         channel = client.commChannel;
         serverAddress = new InetSocketAddress(client.info.serverIp,client.info.serverPort);
+        LOG.E(" HRBT - "+serverAddress);
     }
     @Override
     protected void sendHrbt() {

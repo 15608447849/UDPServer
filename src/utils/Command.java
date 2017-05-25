@@ -44,13 +44,14 @@ public class Command {
     public static final String SEPARATOR = "@";
     //客户端->服务器 心跳 -> 添加到在线用户中  例如:数据为  HA-89-99-00-09-56 -> byte[] , 长度:length=100 -> 0 0 0 100 > {1,0,0,0,100,数据字节....MAC} ->恢复心跳{1}
     public static final byte HRBT = 1;
-    public static final byte HRBT_RESP=0;
+    public static final byte HRBT_RESP=3;
     public static final byte HRBT_DATA = 2;
     //某客户端请求资源  {5,0,0,0,50,"客户端MAC地址@请求的文件名@状态码(请求状态1)"} -> 通知所有客户端{7,"长度,""},设置状态->
-    // 随后这个客户端会开启一个端口建立和服务器数据端口的连接(打洞准备) ,服务器会收到  {6,长度,mac地址},如果在队列中找到同样的mac得客户端,并且状态码为1(请求状态), 则记录他的数据端口,并且回复一个心跳{2,长度,"查询中"}
+    // 随后这个客户端会开启一个端口建立和服务器数据端口的连接(打洞准备) ,服务器会收到  {7,长度,mac地址},如果在队列中找到同样的mac得客户端,并且状态码为1(请求状态), 则记录他的数据端口,并且回复一个心跳{2,长度,"查询中"}
     public static final byte CLIENT_SERVER_QUESY_SOURCE = 5;
-    public static final byte CLIENT_CONNECT_DATA_CHANNEL = 6;
-    public static final byte NOTIFY_ALL_CLIENT_SOURCE = 7;
+    public static final byte NOTIFY_ALL_CLIENT_SOURCE = 6;
+    public static final byte CLIENT_CONNECT_DATA_CHANNEL = 7;
+
     //发送到所有客户端,查询是否存在这个资源,如果存在,请返回 {SOURCE_NOTITY10,数据长度,"请求资源的MAC@存在资源的mac@请求的资源名本地完整路径@状态码"} 进行绑定
     public static final byte SOURCE_NOTITY = 10;
     public static final byte ABOUT_SOUCE_PATH = 12; // 客户端发送资源在对方本地的路径,给索取资源客户端
@@ -122,8 +123,10 @@ public class Command {
             int length = bytesToInt(bytes, position); // 1 2 3 4
             position += 4;
             list.add(length);
+            String str = bytesToString(bytes,position,length);
+            if (str.equalsIgnoreCase("error")) return null;
             //数据实体
-            list.add(bytesToString(bytes,position,length)); //5
+            list.add(str); //5
             return list;
         }catch (Exception e){
             e.printStackTrace();
@@ -149,6 +152,7 @@ public class Command {
                 if (message==null || message.length()==0 || proc == 0) return;
                 byte[] data = Command.createDatas(proc,message);
                 buffer = ByteBuffer.wrap(data);
+                buffer.clear();
                 buffer.put(data);
                 buffer.flip();
             }
@@ -165,6 +169,7 @@ public class Command {
     public static void loopSelect(Selector selector,SelectAction action){
         try {
             if (selector==null && action==null) return;
+
             while (selector.select() > 0){
                 Iterator iterator = selector.selectedKeys().iterator();
                 SelectionKey key = null;
