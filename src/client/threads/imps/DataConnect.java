@@ -63,6 +63,7 @@ public class DataConnect extends ClientThread {
     @Override
     public void tranlslete(String path) {
         source = path;
+        LOG.I("资源在远程的路径: "+source);
     }
 
     @Override
@@ -86,7 +87,7 @@ public class DataConnect extends ClientThread {
             bytes = Command.createDatas(Command.CLIENT_CONNECT_DATA_CHANNEL, macAddress+Command.SEPARATOR+state);
             Command.createDatas(bytes,buffer);
             channel.send(buffer,serverAddress);
-            LOG.I("发送给服务器消息:. "+ Command.CLIENT_CONNECT_DATA_CHANNEL);
+//            LOG.I("发送给服务器消息:. "+ Command.CLIENT_CONNECT_DATA_CHANNEL );
             if (state == 0){
                 stopSelf();
             }
@@ -100,6 +101,7 @@ public class DataConnect extends ClientThread {
             if (state == 2){
                 //握手中 {syn,长度,mac}
                 bytes = Command.createDatas(Command.SYN, macAddress);
+                LOG.I("向 "+ targetAddress +"发送握手包");
             }else
             if (state == 3){
                 bytes = Command.createDatas(Command.AKC, source);//发送资源文件名
@@ -150,6 +152,7 @@ public class DataConnect extends ClientThread {
                 //对方的IP地址 {SOUCE_QUERY_SUCCESS,长度,"B_IP@B_port"}
                     int dataLenth = Command.bytesToInt(datas,1);
                     String string = Command.bytesToString(datas,5,dataLenth);
+                    LOG.I("资源请求者,收到对方的信息:"+string);
                     String[] sarr = string.split(Command.SEPARATOR);
                     targetAddress = new InetSocketAddress(sarr[0],Integer.parseInt(sarr[1]));
                     //接下来尝试给对方发送握手包

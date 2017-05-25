@@ -23,7 +23,7 @@ public class ClientConnectDataPort implements ICommand {
         int dataPort = (int)objects[2];
         String mac = ((String) objects[3]).split(Command.SEPARATOR)[0];
         DatagramChannel channel = (DatagramChannel) objects[4];
-        LOG.I("客户端连接数据端口 -- "+mac + " - port" +dataPort);
+//        LOG.I("客户端连接数据端口 -- "+mac + " - port" +dataPort);
         UdpClient client = server.opration.setClientDataPort(mac,dataPort);
         if (client==null) return;
         Command.sendMessage(channel,new InetSocketAddress(client.inetAddress,client.dataPort),Command.HRBT_DATA,"success.",null);

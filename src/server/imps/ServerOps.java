@@ -136,11 +136,12 @@ public class ServerOps extends HashSet implements CheckThread.Action{
                     clientSorc = client;
                 }
             }
-            if (clientDest!=null && clientSorc!=null){
-                if (clientDest.state==1 && clientSorc.state == 1){
+            if (clientDest!=null && clientSorc!=null && clientDest.state==2){
+                 //请求资源者端口准备就绪
                     dataConnBindMap.put(clientSorc,clientDest);
+                    LOG.I(clientSorc+"  绑定 "+clientDest);
                     return clientDest;//索取者客户端
-                }
+
             }
             return null;
         }finally {
@@ -154,11 +155,13 @@ public class ServerOps extends HashSet implements CheckThread.Action{
     public Map.Entry<UdpClient,UdpClient> findBindMac(String sMac) {
         try{
             lock.lock();
+            LOG.I("查询绑定数据端口队列");
             Iterator<Map.Entry<UdpClient,UdpClient>> itr = dataConnBindMap.entrySet().iterator();
             Map.Entry<UdpClient,UdpClient> entry;
             while (itr.hasNext()){
                 entry = itr.next();
-                if (entry.getKey().macAddress.equals(sMac)){
+
+                if (entry.getKey().macAddress.equalsIgnoreCase(sMac)){
                     return entry;
                 }
             }
@@ -175,9 +178,11 @@ public class ServerOps extends HashSet implements CheckThread.Action{
            UdpClient client;
             while (itr.hasNext()){
               client =  itr.next();
-              LOG.I(client+" - "+mac);
+
               if (client.macAddress.equalsIgnoreCase(mac) && client.state==1){//请求中
                   client.dataPort = dataPort;
+                  client.state = 2;//已设置数据端口
+                  LOG.I("客户端连接数据端口设置成功 -- "+client);
                   return client;
               }
            }

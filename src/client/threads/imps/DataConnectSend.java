@@ -32,8 +32,7 @@ public class DataConnectSend extends DataConnect {
                 if (state == 1 || state == 0){
                     //发送消息到服务器  - 接受一次心跳
                     sendDataToServer();
-                }else
-                if (state == 10){
+                }else if (state == 10){
                     questDataToServer();
                 }else{
                     sendDataToTarget();
@@ -48,6 +47,7 @@ public class DataConnectSend extends DataConnect {
             bytes = Command.createDatas(Command.NOTIFY_DATA_PORT, macAddress);
             Command.createDatas(bytes,buffer);
             channel.send(buffer,serverAddress);
+            LOG.I("请求服务器 互换双方信息");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -85,7 +85,6 @@ public class DataConnectSend extends DataConnect {
             }
 
             Command.createDatas(bytes,buffer);
-            LOG.E("");
             channel.send(buffer,targetAddress);
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,11 +103,13 @@ public class DataConnectSend extends DataConnect {
                 // {ip@port}
                 int dataLenth = Command.bytesToInt(datas,1);
                 String string = Command.bytesToString(datas,5,dataLenth);
+                LOG.I("资源发送者获取到对方的 信息: "+string);
                 String[] sarr = string.split(Command.SEPARATOR);
                 targetAddress = new InetSocketAddress(sarr[0],Integer.parseInt(sarr[1]));
                 state = 11; //尝试发送握手包
             }
             else if (command == Command.SKY){
+                LOG.I("收到对方的 信息握手包");
                 //对方的握手包
                 state = 12;
                 //发送回执

@@ -4,6 +4,7 @@ import CommandHandler.ICommand;
 import server.beans.UdpClient;
 import server.imps.ServerImps;
 import utils.Command;
+import utils.LOG;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -24,6 +25,7 @@ public class ClientQuestBindClient implements ICommand {
         DatagramChannel channel = (DatagramChannel) objects[4];
 
         Map.Entry<UdpClient,UdpClient> entry =  server.opration.findBindMac(sMac);
+        LOG.E("是否获取到一组绑定的信息 >> "+entry);
         if (entry!=null){
             //互换
             UdpClient scr = entry.getKey();
@@ -32,7 +34,7 @@ public class ClientQuestBindClient implements ICommand {
             Command.sendMessage(channel,new InetSocketAddress(des.inetAddress,des.dataPort),Command.SOUCE_QUERY_SUCCESS,scr.inetAddress.getHostAddress()+Command.SEPARATOR+scr.dataPort,null);
         }else{
             //通知失败
-            Command.sendMessage(channel,clientAddress,Command.HRBT_DATA,"find bind map error.",null);
+           // Command.sendMessage(channel,clientAddress,Command.HRBT_DATA,"find bind map error.",null);
         }
     }
 }

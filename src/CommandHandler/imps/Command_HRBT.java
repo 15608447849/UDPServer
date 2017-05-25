@@ -34,7 +34,7 @@ public class Command_HRBT implements ICommand {
                         Command.HRBT_RESP,
                         "success",
                         null);
-                LOG.I("客户端存活 - "+client+" , 当前在线数:" + serverImps.opration.getOnliNunber() + channel);
+               // LOG.I("客户端存活 - "+client+" , 当前在线数:" + serverImps.opration.getOnliNunber() + channel);
             }
         }catch (Exception e){
             e.printStackTrace();

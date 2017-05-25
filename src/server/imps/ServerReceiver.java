@@ -54,7 +54,10 @@ public class ServerReceiver extends Thread implements Command.SelectAction {
             final String command = server.commandManager.getExcute((byte) dataList.get(0));
             InetAddress inetAddress = socketAddress.getAddress();
             int inetPort = socketAddress.getPort();
-            LOG.I("服务器 >>> "+inetAddress+":"+inetPort +" 数据: "+ dataList);
+            if ((byte) dataList.get(0) != Command.HRBT){
+                LOG.I("服务器 >>> "+inetAddress+":"+inetPort +" 数据: "+ dataList);
+            }
+
             final  Object paramList = new Object[]{server,inetAddress,inetPort,dataList.get(2),sc};
             ClazzUtil.createClazzInvokeMethod(command,"handlerCommand",new Class[]{Object[].class},new Object[]{paramList});
         } catch (IOException e) {
