@@ -55,9 +55,9 @@ public class DataConnect extends ClientThread {
         this.serverAddress = new InetSocketAddress(client.info.serverIp,client.info.serverDataPort);//数据端口
         this.macAddress = client.info.macAddress;//本机mac
         channel = DatagramChannel.open();
-        channel.bind(new InetSocketAddress(client.info.dataPort));
+        channel.bind(new InetSocketAddress(client.info.localIp,client.info.dataPort));
         buffer = ByteBuffer.allocate(Command.DATA_BUFF_LENGTH);
-        LOG.I("建立 和服务器 数据端口的连接创建完成. "+ serverAddress);
+        LOG.I("建立 和服务器 数据端口的连接创建完成. "+ serverAddress +" data channael: "+channel + " "+buffer);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class DataConnect extends ClientThread {
             bytes = Command.createDatas(Command.CLIENT_CONNECT_DATA_CHANNEL, macAddress+Command.SEPARATOR+state);
             Command.createDatas(bytes,buffer);
             channel.send(buffer,serverAddress);
-            LOG.I("发送给吴服务器消息:. "+ Command.CLIENT_CONNECT_DATA_CHANNEL);
+            LOG.I("发送给服务器消息:. "+ Command.CLIENT_CONNECT_DATA_CHANNEL);
             if (state == 0){
                 stopSelf();
             }

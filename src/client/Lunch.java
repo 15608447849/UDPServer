@@ -19,7 +19,7 @@ public class Lunch {
         int port2 = 6000;
 
 //            开启一个文件请求
-            startFileQ();
+//            startFileQ();
 
         String serverIp = "39.108.87.46";
 //        String serverIp = "172.16.0.200";

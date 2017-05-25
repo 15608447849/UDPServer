@@ -6,6 +6,7 @@ import client.threads.ClientThread;
 import client.threads.imps.DataConnectSend;
 import utils.Command;
 import utils.FindFileVisitor;
+import utils.LOG;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -38,6 +39,7 @@ public class ClientSourceLocalFind implements ICommand {
         //开始查询
         ArrayList<String> arrayList = new FindFileVisitor(Command.HOME_DIR).setFindFileName(fileName).find();
         if (arrayList.size() > 0){
+            LOG.E(arrayList+" ");
             //取第一个
             //告知服务器,并设置自己的状态 -> 请求中  {索取者MAC,本地mac,文件本地完整路径,自己的状态码} ->打开数据传输线程,准备接通服务器 ( 服务器将绑定我的mac和对方mac , 进行ip端口交换,并设置状态为 传输中,防止其他客户端找到相同文件,破坏通道)
             String message = dMac + Command.SEPARATOR + client.info.macAddress + Command.SEPARATOR + arrayList.get(0) + Command.SEPARATOR + 1;

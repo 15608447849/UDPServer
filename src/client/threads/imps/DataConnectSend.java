@@ -3,6 +3,7 @@ package client.threads.imps;
 import client.imps.ClientImps;
 import client.threads.ClientThread;
 import utils.Command;
+import utils.LOG;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -19,7 +20,6 @@ import java.nio.channels.FileChannel;
  */
 public class DataConnectSend extends DataConnect {
     private MappedByteBuffer mappedByteBuffer;
-    private long currentPositon = 0;
     public DataConnectSend(ClientImps client) throws IOException {
         super(client);
     }
@@ -32,11 +32,10 @@ public class DataConnectSend extends DataConnect {
                 if (state == 1 || state == 0){
                     //发送消息到服务器  - 接受一次心跳
                     sendDataToServer();
-
-                }
+                }else
                 if (state == 10){
                     questDataToServer();
-                }else {
+                }else{
                     sendDataToTarget();
                 }
                 receiveMessage();
@@ -86,6 +85,7 @@ public class DataConnectSend extends DataConnect {
             }
 
             Command.createDatas(bytes,buffer);
+            LOG.E("");
             channel.send(buffer,targetAddress);
         } catch (Exception e) {
             e.printStackTrace();

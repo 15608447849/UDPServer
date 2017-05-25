@@ -1,6 +1,8 @@
 package client.threads;
 
 import client.imps.ClientImps;
+import utils.Command;
+import utils.LOG;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,6 +40,7 @@ public abstract class ClientThread extends Thread {
     }
     protected void stopSelf() {
         try {
+            LOG.I("关闭连接");
             if (channel!=null){
                 //关闭连接
                 channel.close();
