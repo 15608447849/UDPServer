@@ -98,7 +98,7 @@ public class Command {
         return bytes;
     }
     public static byte[] createDatas(byte proc,String message) throws UnsupportedEncodingException {
-        byte[] bytes = message.getBytes("utf-8");
+        byte[] bytes = message.getBytes("GBK");
         byte[] length = Command.intToBytes(bytes.length);
         byte[] data = new byte[1+length.length+bytes.length];
         int pos = 0;
@@ -136,7 +136,7 @@ public class Command {
 
     public static String bytesToString(byte[] bytes,int position,int length){
         try {
-            String str = new String(bytes, position, length, "utf-8");
+            String str = new String(bytes, position, length, "GBK");
             return str;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
