@@ -75,9 +75,7 @@ public class DataConnect extends ClientThread {
             }else{
                 sendDataToTarget();
             }
-            if (state != 0){
                 receiveMessage();
-            }
         }
     }
 
@@ -133,7 +131,7 @@ public class DataConnect extends ClientThread {
     public byte[] getData() throws IOException {
         //处理结果
         buffer.clear();
-        channel.receive(buffer);
+       channel.receive(buffer);
         buffer.flip();
         byte[] datas = new byte[buffer.limit()];
         while (buffer.hasRemaining()) {
@@ -147,6 +145,11 @@ public class DataConnect extends ClientThread {
     protected void receiveMessage() {
         try {
             byte[] datas = getData();
+            if (datas==null)
+            {
+                receiveMessage();
+            return;
+            }
             byte command = datas[0];
             if (command == Command.SOUCE_QUERY_SUCCESS){
                 //对方的IP地址 {SOUCE_QUERY_SUCCESS,长度,"B_IP@B_port"}

@@ -69,7 +69,6 @@ public class Command {
      */
     public static final byte SYN = 50;
     public static final byte AKC = 51;
-    public static final byte SKY = 52;//发送资源文件名
     public static final byte FLG = 53;//返回资源总大小
     public static final byte DATA = 100;
     public static final byte SAVE = 101;//指定资源客户端的文件的起始点{save,起始点} long 型

@@ -93,6 +93,7 @@ public class ClientImps {
         try {
             DataConnect dCon =  new DataConnect(this);
             threadMap.put("request",dCon);
+            dCon.localPath = localPath;
             dCon.start();
         } catch (IOException e) {
             e.printStackTrace();

@@ -59,6 +59,7 @@ public class DataConnectSend extends DataConnect {
             if (state == 11){
                 //发送握手包
                 bytes = Command.createDatas(Command.SYN, macAddress);
+                LOG.I("资源发送者 - 发送握手包  >> "+targetAddress);
             }
             if (state == 12){
                 //接受到握手包发送回执
@@ -96,19 +97,21 @@ public class DataConnectSend extends DataConnect {
         try {
             byte[] datas = getData();
             byte command = datas[0];
+            LOG.I("命令:"+command);
             if (command == Command.HRBT_DATA){
                 //收到服务心跳
                 state = 10;
             }else if (command == Command.SOUCE_QUERY_SUCCESS){
                 // {ip@port}
                 int dataLenth = Command.bytesToInt(datas,1);
+                LOG.I("资源发送者获取到对方的 信息 string length : "+dataLenth);
                 String string = Command.bytesToString(datas,5,dataLenth);
                 LOG.I("资源发送者获取到对方的 信息: "+string);
                 String[] sarr = string.split(Command.SEPARATOR);
                 targetAddress = new InetSocketAddress(sarr[0],Integer.parseInt(sarr[1]));
                 state = 11; //尝试发送握手包
             }
-            else if (command == Command.SKY){
+            else if (command == Command.SYN){
                 LOG.I("收到对方的 信息握手包");
                 //对方的握手包
                 state = 12;
