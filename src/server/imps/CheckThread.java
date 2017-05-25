@@ -1,4 +1,4 @@
-package imps;
+package server.imps;
 
 /**
  * Created by lzp on 2017/5/23.
