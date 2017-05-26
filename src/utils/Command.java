@@ -97,7 +97,7 @@ public class Command {
         return bytes;
     }
     public static byte[] createDatas(byte proc,String message) throws UnsupportedEncodingException {
-        byte[] bytes = message.getBytes("GBK");
+        byte[] bytes = message.getBytes();
         byte[] length = Command.intToBytes(bytes.length);
         byte[] data = new byte[1+length.length+bytes.length];
         int pos = 0;
@@ -110,7 +110,6 @@ public class Command {
     }
     //解析数据
     public static ArrayList<Object> parseDatas(byte[] bytes){
-
         try {
             ArrayList<Object> list = new ArrayList<>();
             int position = 0;
@@ -122,10 +121,8 @@ public class Command {
             int length = bytesToInt(bytes, position); // 1 2 3 4
             position += 4;
             list.add(length);
-            String str = bytesToString(bytes,position,length);
-            if (str.equalsIgnoreCase("error")) return null;
             //数据实体
-            list.add(str); //5
+            list.add(bytesToString(bytes,position,length)); //5
             return list;
         }catch (Exception e){
             e.printStackTrace();
@@ -134,13 +131,7 @@ public class Command {
     }
 
     public static String bytesToString(byte[] bytes,int position,int length){
-        try {
-            String str = new String(bytes, position, length, "GBK");
-            return str;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return "error";
+            return  new String(bytes, position, length);
     }
 
     //发送消息

@@ -34,7 +34,7 @@ public class DataConnectSend extends DataConnect {
                     sendDataToServer();
                 }else if (state == 10){
                     questDataToServer();
-                }else{
+                }else if (state > 10){
                     sendDataToTarget();
                 }
                 receiveMessage();
@@ -71,18 +71,20 @@ public class DataConnectSend extends DataConnect {
             }if (state == 14){
                 int len=0;
                 //从下标开始获取数据
-               if ((fileSize - position) > 2048){
-                       len = 2048;
+               if ((fileSize - position) > 1000){
+                       len =1000;
                }else{
                    len = (int) (fileSize-position);
                }
-                byte [] strArr = Command.DATA_SEPARATOR.getBytes();
+               LOG.I("传输大小:"+len);
                 byte[] lenby = Command.intToBytes(len);
-                bytes = new byte[1+lenby.length+strArr.length];
+                byte [] strArr = Command.DATA_SEPARATOR.getBytes();
+                bytes = new byte[1+lenby.length+len+strArr.length];
                 bytes[0] = Command.DATA;
-                System.arraycopy(lenby, 0, bytes, 1, lenby.length); //从length数组的第一个元素起复制四个元素到 data ,从pos位置开始算
+                System.arraycopy(lenby, 0, bytes, 1, lenby.length); //
                 mappedByteBuffer.get(bytes,1+lenby.length,len);
-                System.arraycopy(strArr, 0, bytes, bytes.length-strArr.length, strArr.length); //从length数组的第一个元素起复制四个元素到 data ,从pos位置开始算
+
+                System.arraycopy(strArr, 0, bytes, 1+lenby.length + len , strArr.length);
             }
 
             Command.createDatas(bytes,buffer);
@@ -95,6 +97,7 @@ public class DataConnectSend extends DataConnect {
     @Override
     protected void receiveMessage() {
         try {
+            if (state==0) return;
             byte[] datas = getData();
             byte command = datas[0];
             LOG.I("命令:"+command);
@@ -121,22 +124,24 @@ public class DataConnectSend extends DataConnect {
                 //收到对方的回执信息 - 包含本地资源的全路径
                 int len = Command.bytesToInt(datas,1);
                 localPath = Command.bytesToString(datas,5,len);
+                LOG.I("本地文件 - "+localPath);
                 //获取文件流
-                rafile = new RandomAccessFile(localPath,"r");
-                fileChannel = rafile.getChannel();
-                fileSize = fileChannel.size(); //文件大小
-                mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);//内存映射
+               if (rafile==null
+                        && fileChannel==null && mappedByteBuffer==null){
+                   rafile = new RandomAccessFile(localPath,"r");
+                   fileChannel = rafile.getChannel();
+                   fileSize = fileChannel.size(); //文件大小
+                   mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);//内存映射
+               }
                 //通知对方
                 state = 13;
             }else if (command == Command.SAVE){
                 //获取下标 传递数据
                 position = Command.bytesToLong(datas,1);
+                LOG.I("下标 - " + position);
                 state = 14;
             }else if (command == Command.CLOSE){
                 state = 0;
-                rafile.close();
-                fileChannel.close();
-                mappedByteBuffer = null;
             }
         } catch (IOException e) {
             e.printStackTrace();

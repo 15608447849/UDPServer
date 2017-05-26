@@ -111,6 +111,7 @@ public class DataConnect extends ClientThread {
             }else if (state == 5){
                 //通知目标关闭通道
                bytes = Command.createDatas(Command.CLOSE,macAddress);
+               state = 0;
             }
             Command.createDatas(bytes,buffer);
             channel.send(buffer,targetAddress);
@@ -144,12 +145,8 @@ public class DataConnect extends ClientThread {
     @Override
     protected void receiveMessage() {
         try {
+            if (state==0) return;
             byte[] datas = getData();
-            if (datas==null)
-            {
-                receiveMessage();
-            return;
-            }
             byte command = datas[0];
             if (command == Command.SOUCE_QUERY_SUCCESS){
                 //对方的IP地址 {SOUCE_QUERY_SUCCESS,长度,"B_IP@B_port"}
@@ -167,26 +164,26 @@ public class DataConnect extends ClientThread {
                 //携带资源的总大小 {FLG,文件大小long}
                 fileSize =Command.bytesToLong(datas,1);
                 LOG.I("文件长度 : "+ fileSize);
-                rafile = new RandomAccessFile(localPath,"rw");
-                rafile.setLength(fileSize);
-                fileChannel = rafile.getChannel();//文件管道
-                lock = fileChannel.lock();//文件上锁
+                if (rafile==null && fileChannel==null) {
+                    rafile = new RandomAccessFile(localPath, "rw");
+                    rafile.setLength(fileSize);
+                    fileChannel = rafile.getChannel();//文件管道
+                }
                 state = 4;
             }else if (command == Command.DATA){
                 //数据 {data,长度, ~~~~~~~~~~~~ ****}
                 int dataSize = Command.bytesToInt(datas,1);
-                String checkSpc = new String(datas,dataSize,dataSize+4);//检测符号
+                String checkSpc = new String(datas,5+dataSize,Command.DATA_SEPARATOR.getBytes().length);//检测符号
                 if (checkSpc.equals(Command.DATA_SEPARATOR)){
+                    lock = fileChannel.lock();//文件上锁
                     buffer.clear();
                     buffer.put(datas,5,dataSize);
                     buffer.flip();
                     fileChannel.write(buffer);
                     position+=dataSize;
+                    lock.release();
                     if (position==fileSize){
                         state = 5;//结束下载
-                        fileChannel.close();
-                        rafile.close();
-                        lock.release();
                     }
                 }
             }
@@ -197,4 +194,24 @@ public class DataConnect extends ClientThread {
     }
 
 
+    @Override
+    protected void stopSelf() {
+        super.stopSelf();
+        if (fileChannel!=null){
+            try {
+                fileChannel.close();
+            } catch (IOException e) {
+            } finally {
+                fileChannel = null;
+            }
+        }
+        if (rafile!=null){
+            try {
+                fileChannel.close();
+            } catch (IOException e) {
+            } finally {
+                fileChannel = null;
+            }
+        }
+    }
 }

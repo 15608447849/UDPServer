@@ -45,7 +45,6 @@ public abstract class ClientThread extends Thread {
                 //关闭连接
                 channel.close();
                 buffer.clear();
-                buffer = null;
             }
         } catch (IOException e) {
         }
