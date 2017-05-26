@@ -55,8 +55,10 @@ public class receiveServerMessage extends ClientThread implements Command.Select
 
             InetAddress inetAddress = socketAddress.getAddress();
             int inetPort = socketAddress.getPort();
-            if (!inetAddress.getHostAddress().equals(client.info.serverIp.getHostAddress())) return;//接入限制
             LOG.I("客户端,收到 : "+inetAddress+":"+inetPort +" 数据: "+ Arrays.toString(datas));
+            if (!inetAddress.getHostAddress().equals(client.info.serverIp.getHostAddress())){
+                return;//接入限制
+            }
             ArrayList<Object> dataList = Command.parseDatas(datas);
             if (dataList==null) return;
             final String command = client.commandManager.getExcute((byte) dataList.get(0));
