@@ -20,10 +20,10 @@ import java.nio.channels.FileChannel;
  */
 public class DataConnectSend extends DataConnect {
     private MappedByteBuffer mappedByteBuffer;
+
     public DataConnectSend(ClientImps client) throws IOException {
         super(client);
     }
-
 
     @Override
     public void run() {

@@ -51,6 +51,40 @@ public class DataConnect extends ClientThread {
      * 
      */
     public int state = 1;
+
+
+    //保存通讯
+    private Thread hebtThread = new Thread(new Runnable() {
+
+
+        @Override
+        public void run() {
+            ByteBuffer buff =ByteBuffer.allocate(1);
+            buff.put((byte) -10);
+            while (flag){
+                synchronized (buff){
+                    try {
+                        buff.wait(10 * 1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (targetAddress!=null){
+                    buff.rewind();
+                    try {
+                        channel.send(buff,targetAddress);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        }
+    });
+
+
+
+
     public DataConnect(ClientImps client) throws IOException {
         super(client);
         this.serverAddress = new InetSocketAddress(client.info.serverIp,client.info.serverDataPort);//数据端口
@@ -58,6 +92,7 @@ public class DataConnect extends ClientThread {
         channel = DatagramChannel.open();
         channel.bind(new InetSocketAddress(client.info.localIp,client.info.dataPort));
         buffer = ByteBuffer.allocate(Command.DATA_BUFF_LENGTH);
+        hebtThread.start();
         LOG.I("建立 和服务器 数据端口的连接创建完成. "+ serverAddress);
     }
 
