@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -51,6 +52,7 @@ public class receiveServerMessage extends ClientThread implements Command.Select
                 buffer.get(datas);
             }
             buffer.clear();
+            LOG.I("客户端,收到:"+ Arrays.toString(datas));
             ArrayList<Object> dataList = Command.parseDatas(datas);
             if (dataList==null) return;
             final String command = client.commandManager.getExcute((byte) dataList.get(0));

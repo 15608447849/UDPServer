@@ -31,7 +31,7 @@ public class ClientConnectDataPort implements ICommand {
                 LOG.I("客户端连接数据端口成功:\n"+client);
             }
             //回复心跳
-            Command.sendMessage(channel,new InetSocketAddress(address,dataPort),Command.HRBT_DATA,server.server.macAddress);
+            Command.sendMessage(channel,new InetSocketAddress(address,dataPort),Command.HRBT_DATA);
         }else if (tag == 0){
             //关闭通道
             UdpClient client = server.opration.setClientDataPortClose(mac);

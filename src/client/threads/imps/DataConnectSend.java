@@ -69,6 +69,7 @@ public class DataConnectSend extends DataConnect {
                 //发送 文件 大小
                 bytes = Command.createDatas(Command.FLG,fileSize);
             }if (state == 14){
+                LOG.I("############################");
                 int len = 0;
                 //从下标开始获取数据
                 long csun = fileSize - position;
@@ -92,10 +93,14 @@ public class DataConnectSend extends DataConnect {
                     e.printStackTrace();
                 }
                 LOG.I("传输大小:"+len);
+                LOG.I("############################");
             }
 
-            Command.createDatas(bytes,buffer);
-            channel.send(buffer,targetAddress);
+            if (targetAddress!=null){
+                Command.createDatas(bytes,buffer);
+                channel.send(buffer,targetAddress);
+            }
+
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,18 +121,31 @@ public class DataConnectSend extends DataConnect {
             }else if (command == Command.SOUCE_QUERY_SUCCESS){
                 // {ip@port}
                 int dataLenth = Command.bytesToInt(datas,1);
-                LOG.I("资源发送者获取到对方的 信息 string length : "+dataLenth);
+
                 String string = Command.bytesToString(datas,5,dataLenth);
                 LOG.I("资源发送者获取到对方的 信息: "+string);
                 String[] sarr = string.split(Command.SEPARATOR);
                 targetAddress = new InetSocketAddress(sarr[0],Integer.parseInt(sarr[1]));
-                state = 11; //尝试发送握手包
+                if (state == 20){
+                    //收到过对方的握手包
+                    state = 12;
+                }else{
+                    state = 11; //尝试发送握手包
+                }
+
             }
             else if (command == Command.SYN){
-                LOG.I("收到对方的 信息握手包");
+                LOG.I("收到对方的 信息握手包,当前是否存在 对方信息 - " +targetAddress);
                 //对方的握手包
-                state = 12;
-                //发送回执
+                if (targetAddress==null){
+                    state = 20;
+                    LOG.I("等待服务器告知对方信息.");
+                    //发送回执
+                }else{
+                    state = 12;
+                    LOG.I("发送回执");
+                }
+
             }
             else if (command == Command.AKC){
                 //收到对方的回执信息 - 包含本地资源的全路径
@@ -155,5 +173,10 @@ public class DataConnectSend extends DataConnect {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void deleteOnMap() {
+        client.threadMap.remove("respond");
     }
 }

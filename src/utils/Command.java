@@ -44,7 +44,7 @@ public class Command {
     public static final String DATA_SEPARATOR = "****";
     public static final String SEPARATOR = "@";
     public static final int BUFF_LENGTH = 256;
-    public static final int DATA_LENGTH = 2048;
+    public static final int DATA_LENGTH = 512;
     public static final int DATA_BUFF_LENGTH = DATA_LENGTH+1+4+DATA_SEPARATOR.getBytes().length;
     //客户端->服务器 心跳 -> 添加到在线用户中  例如:数据为  HA-89-99-00-09-56 -> byte[] , 长度:length=100 -> 0 0 0 100 > {1,0,0,0,100,数据字节....MAC} ->恢复心跳{1}
     public static final byte HRBT = 1;
@@ -115,18 +115,26 @@ public class Command {
     //解析数据
     public static ArrayList<Object> parseDatas(byte[] bytes){
         try {
+
             ArrayList<Object> list = new ArrayList<>();
             int position = 0;
             //协议位
             byte protocol = bytes[position];
-            position++;
-            list.add(protocol);
-            //长度位
-            int length = bytesToInt(bytes, position); // 1 2 3 4
-            position += 4;
-            list.add(length);
-            //数据实体
-            list.add(bytesToString(bytes,position,length)); //5
+                list.add(protocol);
+            if (bytes.length == 1) return list;
+            if (bytes.length>5){
+                position++;
+                //字符串byte的长度位
+                int length = bytesToInt(bytes, position); // 1 2 3 4
+                if (length>0){
+                    position += 4;
+                    list.add(length);
+                    //数据实体
+                    list.add(bytesToString(bytes,position,length)); //5
+                }
+
+            }
+
             return list;
         }catch (Exception e){
             e.printStackTrace();
@@ -150,6 +158,19 @@ public class Command {
             if (message==null || message.length() == 0 || proc == 0) return;
 //            LOG.I("发送数据 : "+proc + " - " +message);
             byte[] data = Command.createDatas(proc,message);
+            ByteBuffer buffer = ByteBuffer.wrap(data);
+            buffer.clear();
+            buffer.put(data);
+            buffer.flip();
+            channel.send(buffer,targetAddress);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    //发送消息
+    public static void sendMessage(DatagramChannel channel, InetSocketAddress targetAddress,  byte proc) {
+        try {
+            byte[] data = new byte[]{proc};
             ByteBuffer buffer = ByteBuffer.wrap(data);
             buffer.clear();
             buffer.put(data);

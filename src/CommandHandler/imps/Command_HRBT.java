@@ -29,7 +29,7 @@ public class Command_HRBT implements ICommand {
             if (client!=null){
 
                 //返回结果给客户端 - 维持生命周期
-                Command.sendMessage(channel, new InetSocketAddress(client.inetAddress,client.inetPort), Command.HRBT_RESP, serverImps.server.macAddress);
+                Command.sendMessage(channel, new InetSocketAddress(client.inetAddress,client.inetPort), Command.HRBT_RESP);
                // LOG.I("客户端存活 - "+client+" , 当前在线数:" + serverImps.opration.getOnliNunber() + channel);
             }
         }catch (Exception e){
