@@ -5,6 +5,7 @@ import client.threads.ClientThread;
 import utils.Command;
 import utils.LOG;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
@@ -69,7 +70,7 @@ public class DataConnectSend extends DataConnect {
                 //发送 文件 大小
                 bytes = Command.createDatas(Command.FLG,fileSize);
             }if (state == 14){
-                LOG.I("############################");
+
                 int len = 0;
                 //从下标开始获取数据
                 long csun = fileSize - position;
@@ -87,13 +88,16 @@ public class DataConnectSend extends DataConnect {
                 bytes[0] = Command.DATA;
                 System.arraycopy(lenby, 0, bytes, 1, lenby.length); //
                 try {
-                    mappedByteBuffer.get(bytes,1+lenby.length,len);
+//                    for (int offset = (1+lenby.length);offset<len;offset++){
+//                        bytes[offset] = mappedByteBuffer.get();
+//                    }
+                    ByteBuffer byteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, len);
+                    byte[] dbytes = byteBuffer.array();
+                    System.arraycopy(dbytes, 0, bytes, 1+lenby.length, dbytes.length);
                     System.arraycopy(strArr, 0, bytes, 1+lenby.length + len , strArr.length);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                LOG.I("传输大小:"+len);
-                LOG.I("############################");
             }
 
             if (targetAddress!=null){
@@ -156,10 +160,11 @@ public class DataConnectSend extends DataConnect {
                 //获取文件流
                if (rafile==null
                         && fileChannel==null && mappedByteBuffer==null){
-                   rafile = new RandomAccessFile(localPath,"r");
+                   File file = new File(localPath);
+                   fileSize = file.length(); //文件大小
+                   rafile = new RandomAccessFile(file,"r");
                    fileChannel = rafile.getChannel();
-                   fileSize = fileChannel.size(); //文件大小
-                   mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);//内存映射
+                   //mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);//内存映射
                }
                 //通知对方
                 state = 13;
