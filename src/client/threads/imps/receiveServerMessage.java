@@ -52,14 +52,15 @@ public class receiveServerMessage extends ClientThread implements Command.Select
                 buffer.get(datas);
             }
             buffer.clear();
-            LOG.I("客户端,收到:"+ Arrays.toString(datas));
+
+            InetAddress inetAddress = socketAddress.getAddress();
+            int inetPort = socketAddress.getPort();
+            LOG.I("客户端,收到 : "+inetAddress+":"+inetPort +" 数据: "+ Arrays.toString(datas));
             ArrayList<Object> dataList = Command.parseDatas(datas);
             if (dataList==null) return;
             final String command = client.commandManager.getExcute((byte) dataList.get(0));
             if (command == null) return;
-            InetAddress inetAddress = socketAddress.getAddress();
-            int inetPort = socketAddress.getPort();
-            LOG.I("客户端,收到 : "+inetAddress+":"+inetPort +" 数据: "+ dataList);
+            LOG.I("=>"+dataList);
 
             final  Object paramList = new Object[]{client,inetAddress,inetPort,dataList.get(2),sc};
             ClazzUtil.createClazzInvokeMethod(command,"handlerCommand",new Class[]{Object[].class},new Object[]{paramList});
