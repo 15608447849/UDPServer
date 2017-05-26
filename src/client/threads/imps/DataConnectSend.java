@@ -88,12 +88,11 @@ public class DataConnectSend extends DataConnect {
                 bytes[0] = Command.DATA;
                 System.arraycopy(lenby, 0, bytes, 1, lenby.length); //
                 try {
-//                    for (int offset = (1+lenby.length);offset<len;offset++){
-//                        bytes[offset] = mappedByteBuffer.get();
-//                    }
-                    ByteBuffer byteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, len);
-                    byte[] dbytes = byteBuffer.array();
-                    System.arraycopy(dbytes, 0, bytes, 1+lenby.length, dbytes.length);
+                    fileChannel.position(position);//移动
+                    mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, len);
+                    for (int offset = (1+lenby.length);offset<len;offset++){
+                        bytes[offset] = mappedByteBuffer.get();
+                    }
                     System.arraycopy(strArr, 0, bytes, 1+lenby.length + len , strArr.length);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -149,8 +148,6 @@ public class DataConnectSend extends DataConnect {
                     state = 12;
                     LOG.I("发送回执");
                 }
-                //停止对服务器的心跳
-                client.stopHHRBT();
             }
             else if (command == Command.AKC){
                 //收到对方的回执信息 - 包含本地资源的全路径

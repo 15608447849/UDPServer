@@ -4,12 +4,15 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * Created by user on 2017/5/22.
  */
 public class NetUtil {
+
     /**
      * 得到本地IP
      * @return

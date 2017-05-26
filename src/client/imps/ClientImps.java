@@ -16,8 +16,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Created by user on 2017/5/24.
@@ -99,17 +98,5 @@ public class ClientImps {
             e.printStackTrace();
         }
     }
-
-    public void stopHHRBT(){
-        threadMap.get("keepAliveThread").setFlag(false);
-    }
-    public void startHRBT(){
-        threadMap.get("keepAliveThread").setFlag(true);
-    }
-
-
-
-
-
 
 }
