@@ -43,7 +43,7 @@ public class ClientSourceLocalFind implements ICommand {
             //取第一个
             //告知服务器,并设置自己的状态 -> 请求中  {索取者MAC,本地mac,文件本地完整路径,自己的状态码} ->打开数据传输线程,准备接通服务器 ( 服务器将绑定我的mac和对方mac , 进行ip端口交换,并设置状态为 传输中,防止其他客户端找到相同文件,破坏通道)
             String message = dMac + Command.SEPARATOR + client.info.macAddress + Command.SEPARATOR + arrayList.get(0) + Command.SEPARATOR + 1;
-            Command.sendMessage(channel,serverSocketAddress,Command.SOURCE_NOTITY,message,null);//发送消息给服务器
+            Command.sendMessage(channel,serverSocketAddress,Command.SOURCE_NOTITY,message);//发送消息给服务器
             //尝试连接服务器
             try {
                 DataConnectSend sendThread = new DataConnectSend(client);

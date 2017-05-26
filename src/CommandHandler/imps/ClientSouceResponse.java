@@ -33,7 +33,7 @@ public class ClientSouceResponse implements ICommand {
             UdpClient client = serverImps.opration.bindP2P(dMac,sMac);
             if (client!=null){
                 String message = sourcePath;
-                Command.sendMessage(channel,new InetSocketAddress(client.inetAddress,client.inetPort),Command.ABOUT_SOUCE_PATH,sourcePath,null);
+                Command.sendMessage(channel,new InetSocketAddress(client.inetAddress,client.inetPort),Command.ABOUT_SOUCE_PATH,sourcePath);
             }
     }
 }

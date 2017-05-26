@@ -110,7 +110,7 @@ public class ServerOps extends HashSet implements CheckThread.Action{
                    continue;
                }else{
                    if (client.state == 0){ //空闲的
-                       Command.sendMessage(channel,new InetSocketAddress(client.inetAddress,client.inetPort),type,message,null);
+                       Command.sendMessage(channel,new InetSocketAddress(client.inetAddress,client.inetPort),type,message);
                    }
                }
             }

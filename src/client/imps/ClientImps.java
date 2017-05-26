@@ -87,7 +87,7 @@ public class ClientImps {
         int state = 1;
         String message = info.macAddress+Command.SEPARATOR+source+Command.SEPARATOR+state;
         //发送消息到服务器
-        Command.sendMessage(commChannel,new InetSocketAddress(info.serverIp,info.serverPort),Command.CLIENT_SERVER_QUESY_SOURCE,message,null);
+        Command.sendMessage(commChannel,new InetSocketAddress(info.serverIp,info.serverPort),Command.CLIENT_SERVER_QUESY_SOURCE,message);
         LOG.I("请求资源 - "+Command.CLIENT_SERVER_QUESY_SOURCE+" "+message);
         //开启一个线程,尝试和服务器建立连接
         try {

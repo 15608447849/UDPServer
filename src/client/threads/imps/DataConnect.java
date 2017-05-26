@@ -18,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.util.Arrays;
 
 /**
  * Created by user on 2017/5/24.
@@ -107,7 +108,7 @@ public class DataConnect extends ClientThread {
             }else if (state == 4){
                 //发送postion
                 bytes = Command.createDatas(Command.SAVE, position);//发送下标
-
+                LOG.I("发送下标:"+position);
             }else if (state == 5){
                 //通知目标关闭通道
                bytes = Command.createDatas(Command.CLOSE,macAddress);
@@ -161,20 +162,30 @@ public class DataConnect extends ClientThread {
                 //收到握手包回执 里面有对方的mac信息
                 state = 3;
             }else if (command == Command.FLG){
-                //携带资源的总大小 {FLG,文件大小long}
-                fileSize =Command.bytesToLong(datas,1);
-                LOG.I("文件长度 : "+ fileSize);
                 if (rafile==null && fileChannel==null) {
+                    //携带资源的总大小 {FLG,文件大小long}
+                    fileSize =Command.bytesToLong(datas,1);
+                    LOG.I("文件长度 : "+ fileSize+",本地文件路径:"+localPath);
                     rafile = new RandomAccessFile(localPath, "rw");
                     rafile.setLength(fileSize);
                     fileChannel = rafile.getChannel();//文件管道
+                    state = 4;
                 }
-                state = 4;
+
             }else if (command == Command.DATA){
                 //数据 {data,长度, ~~~~~~~~~~~~ ****}
+                LOG.I("接受到数据 :"+ Arrays.toString(datas));
                 int dataSize = Command.bytesToInt(datas,1);
-                String checkSpc = new String(datas,5+dataSize,Command.DATA_SEPARATOR.getBytes().length);//检测符号
+                LOG.I("长度 :"+dataSize);
+                String checkSpc = null;//检测符号
+                try {
+                    checkSpc = new String(datas,5+dataSize, Command.DATA_SEPARATOR.getBytes().length);
+                } catch (Exception e) {
+                    checkSpc = "error";
+
+                }
                 if (checkSpc.equals(Command.DATA_SEPARATOR)){
+                    LOG.I("开始写入进度");
                     lock = fileChannel.lock();//文件上锁
                     buffer.clear();
                     buffer.put(datas,5,dataSize);
@@ -182,6 +193,7 @@ public class DataConnect extends ClientThread {
                     fileChannel.write(buffer);
                     position+=dataSize;
                     lock.release();
+                    LOG.I("写入进度:"+dataSize);
                     if (position==fileSize){
                         state = 5;//结束下载
                     }

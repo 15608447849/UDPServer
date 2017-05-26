@@ -26,6 +26,6 @@ public class ClientConnectDataPort implements ICommand {
 //        LOG.I("客户端连接数据端口 -- "+mac + " - port" +dataPort);
         UdpClient client = server.opration.setClientDataPort(mac,dataPort);
         if (client==null) return;
-        Command.sendMessage(channel,new InetSocketAddress(client.inetAddress,client.dataPort),Command.HRBT_DATA,"success.",null);
+        Command.sendMessage(channel,new InetSocketAddress(client.inetAddress,client.dataPort),Command.HRBT_DATA,"success.");
     }
 }

@@ -25,7 +25,7 @@ public class KeepConnect extends ClientThread {
     @Override
     protected void sendHrbt() {
         //发送心跳
-       Command.sendMessage(channel,serverAddress,Command.HRBT,client.info.macAddress,null);
+       Command.sendMessage(channel,serverAddress,Command.HRBT,client.info.macAddress);
     }
 
     @Override
