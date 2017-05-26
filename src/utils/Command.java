@@ -80,11 +80,7 @@ public class Command {
 
 
 
-    public static void createDatas(byte[] bytes,ByteBuffer byteBuffer){
-        byteBuffer.clear();
-        byteBuffer.put(bytes);
-        byteBuffer.flip();
-    }
+
 
     public static byte[] createDatas(byte proc,int size){
             byte[] intArr = Command.intToBytes(size);

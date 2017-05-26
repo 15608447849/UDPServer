@@ -7,6 +7,7 @@ import utils.LOG;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.FileChannel;
@@ -23,7 +24,6 @@ public class DataConnect extends ClientThread {
     public String macAddress;
     public String source;
     public String localPath;
-    public byte[] bytes;
     public RandomAccessFile rafile;
     public FileChannel fileChannel;
     public FileLock lock;
@@ -90,8 +90,8 @@ public class DataConnect extends ClientThread {
         channel = DatagramChannel.open();
         channel.bind(new InetSocketAddress(client.info.localIp,client.info.dataPort));
         buffer = ByteBuffer.allocate(Command.DATA_BUFF_LENGTH);
-        LOG.I("数据端口的连接创建完成. "+ serverAddress);
         client.stopServerHrbt();//停止心跳
+        LOG.I("数据端口的连接创建完成. "+ serverAddress+", 停止消息心跳.");
     }
 
     @Override
@@ -104,7 +104,7 @@ public class DataConnect extends ClientThread {
     public void run() {
         //建立连接 1 -> 发送心跳 根据返回值处理 :
         while (flag){
-            if (state == 1 || state == 0){
+            if (state == 1 || state == 10 || state==0){
                 sendDataToServer();
             }else{
                 sendDataToTarget();
@@ -116,10 +116,20 @@ public class DataConnect extends ClientThread {
     //发送数据到服务器数据管道保持连接
     public void sendDataToServer() {
         try {
-            bytes = Command.createDatas(Command.CLIENT_CONNECT_DATA_CHANNEL, macAddress+Command.SEPARATOR+state);
-            Command.createDatas(bytes,buffer);
-            channel.send(buffer,serverAddress);
-//            LOG.I("发送给服务器消息:. "+ Command.CLIENT_CONNECT_DATA_CHANNEL );
+            byte[] bytes = null;
+            if (state==1 || state==0){
+                bytes = Command.createDatas(Command.CLIENT_CONNECT_DATA_CHANNEL, macAddress+Command.SEPARATOR+state);
+
+                LOG.I("向服务器告知状态..: "+state);
+            }else if (state == 10){
+                //请求服务器 ->
+                bytes = Command.createDatas(Command.NOTIFY_DATA_PORT, macAddress);
+                LOG.I("请求服务器 互换双方地址信息.建立通讯");
+            }
+            if (serverAddress!=null && bytes!=null){
+                createDatas(bytes);
+                channel.send(buffer,serverAddress);
+            }
             if (state == 0){
                 stopSelf();
             }
@@ -130,29 +140,44 @@ public class DataConnect extends ClientThread {
     //发送给目标对象
     public void sendDataToTarget() {
         try {
+            byte[] bytes = null;
             if (state == 2){
                 //握手中 {syn,长度,mac}
                 bytes = Command.createDatas(Command.SYN, macAddress);
                 LOG.I("向 "+ targetAddress +"发送握手包");
             }else
             if (state == 3){
-                bytes = Command.createDatas(Command.AKC, source);//发送资源文件名
-
+                bytes = Command.createDatas(Command.AKC, source);//发送资源在其本地的全路径
+                 LOG.I("向 "+ targetAddress +"发送资源文件名:"+source);
             }else if (state == 4){
                 //发送postion
                 bytes = Command.createDatas(Command.SAVE, position);//发送下标
                 LOG.I("发送下标:"+position);
-                state = 14;
             }else if (state == 5){
                 //通知目标关闭通道
-               bytes = Command.createDatas(Command.CLOSE,macAddress);
-               state = 0;
-            }
-            if (targetAddress!=null){
-                Command.createDatas(bytes,buffer);
-                channel.send(buffer,targetAddress);
+                bytes = Command.createDatas(Command.CLOSE,macAddress);
+                state = 0;
+                LOG.I("关闭传输");
+            }else
+            if (state == 11){
+                //发送握手包
+                bytes = Command.createDatas(Command.SYN, macAddress);
+                LOG.I("资源发送者 - 发送握手包 -> "+targetAddress);
+            }else
+            if (state == 12){
+                //接受到握手包发送回执
+                bytes = Command.createDatas(Command.AKC, macAddress);
+            }else
+            if (state == 13){
+                //发送 文件 大小
+                bytes = Command.createDatas(Command.FLG,fileSize);
+                LOG.I("发送文件大小 : "+fileSize);
             }
 
+            if (targetAddress!=null && bytes!=null){
+                createDatas(bytes);
+                channel.send(buffer,targetAddress);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -173,48 +198,48 @@ public class DataConnect extends ClientThread {
         buffer.clear();
         SocketAddress address = channel.receive(buffer);
         buffer.flip();
-        bytes = new byte[buffer.limit()];
-        while (buffer.hasRemaining()) {
-            buffer.get(bytes);
-        }
-        buffer.clear();
-        LOG.I("来自 - "+address.toString() +" 数据:"+ Arrays.toString(bytes));
-        if (bytes[0]==77) return;
+        byte tag = buffer.get();
+
+        LOG.I("来自 - "+address.toString() +" 数据标识 :"+ tag);
+        if (tag==77) return;
+        buffer.rewind();
     }
     
     @Override
     protected void receiveMessage() {
         try {
-
             getData();
-            byte command = bytes[0];
+            byte[] bytes = buffer.array();
+            byte command =bytes[0];
             if (command == Command.SOUCE_QUERY_SUCCESS){
                 //对方的IP地址 {SOUCE_QUERY_SUCCESS,长度,"B_IP@B_port"}
                     int dataLenth = Command.bytesToInt(bytes,1);
                     String string = Command.bytesToString(bytes,5,dataLenth);
-                    LOG.I("资源请求者,收到对方的信息:"+string);
+                    LOG.I("资源请求者,收到对方的地址信息:"+string);
                     String[] sarr = string.split(Command.SEPARATOR);
                     targetAddress = new InetSocketAddress(sarr[0],Integer.parseInt(sarr[1]));
                     //接下来尝试给对方发送握手包
                     state = 2;
             }else if (command == Command.AKC){
-                //收到握手包回执 里面有对方的mac信息
+                //收到握手包回执 里面有对方的mac信息 - 通道打通
+                LOG.I("收到握手回执 - 通道建立成功");
                 state = 3;
-
             }else if (command == Command.FLG){
+                //携带资源的总大小 {FLG,文件大小long}
+                fileSize =Command.bytesToLong(bytes,1);
+                LOG.I("收到资源文件长度 : "+ fileSize+" , 资源本地文件保存路径:"+localPath);
+                //对方发送的此文件大小
                 if (rafile==null && fileChannel==null) {
-                    //携带资源的总大小 {FLG,文件大小long}
-                    fileSize =Command.bytesToLong(bytes,1);
-                    LOG.I("文件长度 : "+ fileSize+",本地文件路径:"+localPath);
                     rafile = new RandomAccessFile(localPath, "rw");
                     rafile.setLength(fileSize);
                     fileChannel = rafile.getChannel();//文件管道
-                    state = 4;
+                    state = 4;//开始传输 -> 发送下标
+                    LOG.I("文件流已打开,发送下载点");
                 }
 
             }else if (command == Command.DATA){
                 //数据 {data,长度, ~~~~~~~~~~~~ ****}
-//                LOG.I("接受到数据 :"+ Arrays.toString(datas));
+                LOG.I("接受到数据 :"+ Arrays.toString(bytes));
                 int dataSize = Command.bytesToInt(bytes,1);
                 LOG.I("长度 :"+dataSize);
                 String checkSpc = null;//检测符号
@@ -227,14 +252,14 @@ public class DataConnect extends ClientThread {
                 if (checkSpc.equals(Command.DATA_SEPARATOR)){
                     LOG.I("开始写入进度");
                     lock = fileChannel.lock();//文件上锁
-                    buffer.clear();
-                    buffer.put(bytes,5,dataSize);
-                    buffer.flip();
-                    int len =  fileChannel.write(buffer);
-                    buffer.clear();
-                    position+=len;
+                    ByteBuffer buf = ByteBuffer.allocate(dataSize);
+                    buf.put(bytes,5,dataSize);
+                    buf.flip();
+                    fileChannel.write(buf);
+                    buf.clear();
+                    position+=dataSize;
                     lock.release();
-                    LOG.I("写入进度:"+len+" , 当前pos:"+position+",文件大小:"+fileSize);
+                    LOG.I("写入进度:"+ dataSize +" , 当前pos:" +position+",文件总大小:"+fileSize);
                     if (position==fileSize){
                         state = 5;//结束下载
                     }
@@ -271,5 +296,11 @@ public class DataConnect extends ClientThread {
     }
     public void deleteOnMap(){
         client.threadMap.remove("request");
+    }
+
+    private void createDatas(byte[] bytes){
+        buffer.clear();
+        buffer.put(bytes);
+        buffer.flip();
     }
 }
