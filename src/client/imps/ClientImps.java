@@ -99,5 +99,13 @@ public class ClientImps {
             e.printStackTrace();
         }
     }
+    //停止和服务器的心跳
+    public void stopServerHrbt(){
+        threadMap.get("keepAliveThread").setFlag(false);
+    }
+    //开始和服务器心跳
+    public void starServerHrbt(){
+        threadMap.get("keepAliveThread").setFlag(true);
+    }
 
 }

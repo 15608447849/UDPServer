@@ -4,13 +4,9 @@ import client.imps.ClientImps;
 import client.threads.ClientThread;
 import utils.Command;
 import utils.LOG;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.FileChannel;
@@ -95,6 +91,7 @@ public class DataConnect extends ClientThread {
         channel.bind(new InetSocketAddress(client.info.localIp,client.info.dataPort));
         buffer = ByteBuffer.allocate(Command.DATA_BUFF_LENGTH);
         LOG.I("数据端口的连接创建完成. "+ serverAddress);
+        client.stopServerHrbt();//停止心跳
     }
 
     @Override
@@ -181,7 +178,7 @@ public class DataConnect extends ClientThread {
             buffer.get(bytes);
         }
         buffer.clear();
-        LOG.I("来自 - "+address.toString() +" 数据:"+ bytes.length);
+        LOG.I("来自 - "+address.toString() +" 数据:"+ Arrays.toString(bytes));
         if (bytes[0]==77) return;
     }
     
@@ -191,7 +188,6 @@ public class DataConnect extends ClientThread {
 
             getData();
             byte command = bytes[0];
-
             if (command == Command.SOUCE_QUERY_SUCCESS){
                 //对方的IP地址 {SOUCE_QUERY_SUCCESS,长度,"B_IP@B_port"}
                     int dataLenth = Command.bytesToInt(bytes,1);
@@ -230,14 +226,14 @@ public class DataConnect extends ClientThread {
                 LOG.I("checkSpc : "+checkSpc);
                 if (checkSpc.equals(Command.DATA_SEPARATOR)){
                     LOG.I("开始写入进度");
-//                    lock = fileChannel.lock();//文件上锁
+                    lock = fileChannel.lock();//文件上锁
                     buffer.clear();
                     buffer.put(bytes,5,dataSize);
                     buffer.flip();
                     int len =  fileChannel.write(buffer);
                     buffer.clear();
                     position+=len;
-//                    lock.release();
+                    lock.release();
                     LOG.I("写入进度:"+len+" , 当前pos:"+position+",文件大小:"+fileSize);
                     if (position==fileSize){
                         state = 5;//结束下载
@@ -271,7 +267,7 @@ public class DataConnect extends ClientThread {
             }
         }
         deleteOnMap();
-
+        client.starServerHrbt();//开始心跳
     }
     public void deleteOnMap(){
         client.threadMap.remove("request");
