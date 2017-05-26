@@ -73,13 +73,13 @@ public class DataConnectSend extends DataConnect {
                 //从下标开始获取数据
                 long csun = fileSize - position;
                 LOG.I("剩余文件大小:"+csun);
-               if (csun >= 3000){
-                       len = 3000 ;
+               if (csun >= 2000){
+                       len = 2000 ;
                }else if (csun>0){
                    len = (int) csun;
                }
                if (len==0) return;
-               LOG.I("传输大小:"+len);
+
                 byte[] lenby = Command.intToBytes(len);
                 byte [] strArr = Command.DATA_SEPARATOR.getBytes();
                 bytes = new byte[1+lenby.length+len+strArr.length];
@@ -91,7 +91,7 @@ public class DataConnectSend extends DataConnect {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                LOG.I("传输完成.");
+                LOG.I("传输大小:"+len);
             }
 
             Command.createDatas(bytes,buffer);

@@ -3,12 +3,14 @@ package utils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -44,8 +46,8 @@ public class Command {
     public static final String SEPARATOR = "@";
     //客户端->服务器 心跳 -> 添加到在线用户中  例如:数据为  HA-89-99-00-09-56 -> byte[] , 长度:length=100 -> 0 0 0 100 > {1,0,0,0,100,数据字节....MAC} ->恢复心跳{1}
     public static final byte HRBT = 1;
-    public static final byte HRBT_RESP=3;
-    public static final byte HRBT_DATA = 2;
+    public static final byte HRBT_RESP=-10;
+    public static final byte HRBT_DATA =-20;
     //某客户端请求资源  {5,0,0,0,50,"客户端MAC地址@请求的文件名@状态码(请求状态1)"} -> 通知所有客户端{7,"长度,""},设置状态->
     // 随后这个客户端会开启一个端口建立和服务器数据端口的连接(打洞准备) ,服务器会收到  {7,长度,mac地址},如果在队列中找到同样的mac得客户端,并且状态码为1(请求状态), 则记录他的数据端口,并且回复一个心跳{2,长度,"查询中"}
     public static final byte CLIENT_SERVER_QUESY_SOURCE = 5;
@@ -135,23 +137,21 @@ public class Command {
         try{
             return new String(bytes, position, length);
         }catch (Exception e){
-            LOG.I("解析String 错误, - "+ e.getMessage() + " bytes.length = "+ bytes.length +" position:"+position+",length = "+length);
+            LOG.I("解析String 错误, - "+ e.getMessage() + Arrays.toString(bytes));
         }
         return "!";
     }
 
     //发送消息
-    public static void sendMessage(DatagramChannel channel, InetSocketAddress targetAddress,  byte proc, String message,ByteBuffer buffer) {
+    public static void sendMessage(DatagramChannel channel, InetSocketAddress targetAddress,  byte proc, String message) {
         try {
-
-            if (buffer == null){
-                if (message==null || message.length()==0 || proc == 0) return;
-                byte[] data = Command.createDatas(proc,message);
-                buffer = ByteBuffer.wrap(data);
-                buffer.clear();
-                buffer.put(data);
-                buffer.flip();
-            }
+            if (message==null || message.length() == 0 || proc == 0) return;
+            LOG.I("发送数据 : "+proc + " - " +message);
+            byte[] data = Command.createDatas(proc,message);
+            ByteBuffer buffer = ByteBuffer.wrap(data);
+            buffer.clear();
+            buffer.put(data);
+            buffer.flip();
             channel.send(buffer,targetAddress);
         } catch (IOException e) {
             e.printStackTrace();
@@ -202,11 +202,11 @@ public class Command {
         return src;
     }
     /**
-     * byte数组中取int数值，本方法适用于(低位在后，高位在前)的顺序。和intToBytes2（）配套使用
+     * byte数组中取int数值，本方法适用于(低位在后，高位在前)的顺序。和intToBytes配套使用
      */
     public static int bytesToInt(byte[] src, int offset) {
         int value;
-        value = (int) ( ((src[offset] & 0xFF)<<24)
+        value = ( ((src[offset] & 0xFF)<<24)
                 |((src[offset+1] & 0xFF)<<16)
                 |((src[offset+2] & 0xFF)<<8)
                 |(src[offset+3] & 0xFF));
