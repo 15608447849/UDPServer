@@ -32,9 +32,6 @@ public class ClientQuestBindClient implements ICommand {
             UdpClient des = entry.getValue();
             Command.sendMessage(channel,new InetSocketAddress(scr.inetAddress,scr.dataPort),Command.SOUCE_QUERY_SUCCESS,des.inetAddress.getHostAddress()+Command.SEPARATOR+des.dataPort);
             Command.sendMessage(channel,new InetSocketAddress(des.inetAddress,des.dataPort),Command.SOUCE_QUERY_SUCCESS,scr.inetAddress.getHostAddress()+Command.SEPARATOR+scr.dataPort);
-        }else{
-            //通知失败
-           // Command.sendMessage(channel,clientAddress,Command.HRBT_DATA,"find bind map error.",null);
         }
     }
 }

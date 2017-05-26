@@ -58,7 +58,7 @@ public class DataConnect extends ClientThread {
         channel = DatagramChannel.open();
         channel.bind(new InetSocketAddress(client.info.localIp,client.info.dataPort));
         buffer = ByteBuffer.allocate(Command.DATA_BUFF_LENGTH);
-        LOG.I("建立 和服务器 数据端口的连接创建完成. "+ serverAddress +" data channael: "+channel + " "+buffer);
+        LOG.I("建立 和服务器 数据端口的连接创建完成. "+ serverAddress);
     }
 
     @Override

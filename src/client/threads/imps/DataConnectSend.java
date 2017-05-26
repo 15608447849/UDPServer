@@ -111,6 +111,7 @@ public class DataConnectSend extends DataConnect {
             LOG.I("命令:"+command);
             if (command == Command.HRBT_DATA){
                 //收到服务心跳
+                LOG.I("收到服务器数据端口的心跳.");
                 state = 10;
             }else if (command == Command.SOUCE_QUERY_SUCCESS){
                 // {ip@port}

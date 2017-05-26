@@ -178,15 +178,32 @@ public class ServerOps extends HashSet implements CheckThread.Action{
            UdpClient client;
             while (itr.hasNext()){
               client =  itr.next();
-
-              if (client.macAddress.equalsIgnoreCase(mac) && client.state==1){//请求中
+              if (client.macAddress.equalsIgnoreCase(mac) && client.state==1 || client.state == 2){//请求中->连接上数据端口
                   client.dataPort = dataPort;
                   client.state = 2;//已设置数据端口
-                  LOG.I("客户端连接数据端口设置成功 -- "+client);
                   return client;
               }
            }
            return  null;
+        }finally {
+            lock.unlock();
+        }
+    }
+
+    public UdpClient setClientDataPortClose(String mac) {
+        try{
+            lock.lock();
+            Iterator<UdpClient> itr = iterator();
+            UdpClient client;
+            while (itr.hasNext()){
+                client =  itr.next();
+                if (client.macAddress.equalsIgnoreCase(mac) && client.state== 2){//请求中->连接上数据端口
+                    client.dataPort = 0;
+                    client.state = 0;//空闲
+                    return client;
+                }
+            }
+            return  null;
         }finally {
             lock.unlock();
         }

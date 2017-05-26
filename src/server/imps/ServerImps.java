@@ -26,8 +26,8 @@ public class ServerImps{
     public Selector selector;
     public DatagramChannel commChannel;
     public DatagramChannel connChannel;
-
     public ServerOps opration;
+
     public CommandManager commandManager = CommandManager.get();//命令管理器
     //单例
     private static class Holder{

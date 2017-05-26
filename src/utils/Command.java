@@ -146,7 +146,7 @@ public class Command {
     public static void sendMessage(DatagramChannel channel, InetSocketAddress targetAddress,  byte proc, String message) {
         try {
             if (message==null || message.length() == 0 || proc == 0) return;
-            LOG.I("发送数据 : "+proc + " - " +message);
+//            LOG.I("发送数据 : "+proc + " - " +message);
             byte[] data = Command.createDatas(proc,message);
             ByteBuffer buffer = ByteBuffer.wrap(data);
             buffer.clear();
