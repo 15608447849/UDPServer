@@ -51,13 +51,15 @@ public class DataConnect extends ClientThread {
 
 
     //保存通讯
-    private Thread hebtThread = new Thread(new Runnable() {
+    public Thread hebtThread = new Thread(new Runnable() {
 
 
         @Override
         public void run() {
-            ByteBuffer buff =ByteBuffer.allocate(1);
-            buff.put((byte) -10);
+
+            ByteBuffer buff =ByteBuffer.wrap(new byte[1]);
+            byte tag = 77;
+            buff.put(tag);
             while (flag){
                 synchronized (buff){
                     try {
@@ -90,7 +92,7 @@ public class DataConnect extends ClientThread {
         channel.bind(new InetSocketAddress(client.info.localIp,client.info.dataPort));
         buffer = ByteBuffer.allocate(Command.DATA_BUFF_LENGTH);
         hebtThread.start();
-        LOG.I("建立 和服务器 数据端口的连接创建完成. "+ serverAddress);
+        LOG.I("数据端口的连接创建完成. "+ serverAddress);
     }
 
     @Override
@@ -185,8 +187,8 @@ public class DataConnect extends ClientThread {
         try {
             if (state==0) return;
             byte[] datas = getData();
-            LOG.I("接受到数据 :"+Arrays.toString(datas));
             byte command = datas[0];
+            if (command==77) return;
             if (command == Command.SOUCE_QUERY_SUCCESS){
                 //对方的IP地址 {SOUCE_QUERY_SUCCESS,长度,"B_IP@B_port"}
                     int dataLenth = Command.bytesToInt(datas,1);

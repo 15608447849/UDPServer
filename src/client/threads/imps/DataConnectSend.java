@@ -123,7 +123,7 @@ public class DataConnectSend extends DataConnect {
             if (state==0) return;
             byte[] datas = getData();
             byte command = datas[0];
-            LOG.I("命令:"+command);
+            if (command==77) return;
             if (command == Command.HRBT_DATA){
                 //收到服务心跳
                 LOG.I("收到服务器数据端口的心跳.");
