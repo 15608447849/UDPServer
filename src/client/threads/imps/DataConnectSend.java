@@ -63,6 +63,7 @@ public class DataConnectSend extends DataConnect {
                 int len = Command.bytesToInt(bytes,1);
                 localPath = Command.bytesToString(bytes,5,len);
                 LOG.I("收到对方的回执信息 : "+localPath);
+                client.stopServerHrbt();//停止服务器心跳
                 //获取文件流
                if (rafile==null && fileChannel==null){
                    File file = new File(localPath);

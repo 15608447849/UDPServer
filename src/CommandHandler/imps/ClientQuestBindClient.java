@@ -39,17 +39,18 @@ public class ClientQuestBindClient implements ICommand {
             //互换
             UdpClient scr = entry.getKey();
             UdpClient des = entry.getValue();
-            Command.sendMessage(channel,new InetSocketAddress(des.inetAddress,des.dataPort),Command.SOUCE_QUERY_SUCCESS,scr.inetAddress.getHostAddress()+Command.SEPARATOR+scr.dataPort);
-            LOG.I("告知 资源索取者 ->"+ scr.inetAddress+"-"+scr.dataPort);
+            Command.sendMessage(channel,new InetSocketAddress(scr.inetAddress,scr.dataPort),Command.SOUCE_QUERY_SUCCESS,des.inetAddress.getHostAddress()+Command.SEPARATOR+des.dataPort);
+            LOG.I("告知 资源存在者 ->"+ des.inetAddress+"-"+des.dataPort);
+
             synchronized (this){
                 try {
-                    this.wait( 1000 );
+                    this.wait( 100 );
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            Command.sendMessage(channel,new InetSocketAddress(scr.inetAddress,scr.dataPort),Command.SOUCE_QUERY_SUCCESS,des.inetAddress.getHostAddress()+Command.SEPARATOR+des.dataPort);
-            LOG.I("告知 资源存在者 ->"+ des.inetAddress+"-"+des.dataPort);
+            Command.sendMessage(channel,new InetSocketAddress(des.inetAddress,des.dataPort),Command.SOUCE_QUERY_SUCCESS,scr.inetAddress.getHostAddress()+Command.SEPARATOR+scr.dataPort);
+            LOG.I("告知 资源索取者 ->"+ scr.inetAddress+"-"+scr.dataPort);
 
         }
     }

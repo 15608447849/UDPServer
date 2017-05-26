@@ -44,7 +44,7 @@ public class Command {
     public static final String DATA_SEPARATOR = "****";
     public static final String SEPARATOR = "@";
     public static final int BUFF_LENGTH = 256;
-    public static final int DATA_LENGTH = 2048;
+    public static final int DATA_LENGTH = 1024;
     public static final int DATA_BUFF_LENGTH = DATA_LENGTH+1+4+DATA_SEPARATOR.getBytes().length;
     //客户端->服务器 心跳 -> 添加到在线用户中  例如:数据为  HA-89-99-00-09-56 -> byte[] , 长度:length=100 -> 0 0 0 100 > {1,0,0,0,100,数据字节....MAC} ->恢复心跳{1}
     public static final byte HRBT = 1;

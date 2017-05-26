@@ -90,8 +90,7 @@ public class DataConnect extends ClientThread {
         channel = DatagramChannel.open();
         channel.bind(new InetSocketAddress(client.info.localIp,client.info.dataPort));
         buffer = ByteBuffer.allocate(Command.DATA_BUFF_LENGTH);
-        client.stopServerHrbt();//停止心跳
-        LOG.I("数据端口的连接创建完成. "+ serverAddress+", 停止消息心跳.");
+        LOG.I("数据端口的连接创建完成. "+ serverAddress);
     }
 
     @Override
@@ -119,8 +118,8 @@ public class DataConnect extends ClientThread {
             byte[] bytes = null;
             if (state==1 || state==0){
                 bytes = Command.createDatas(Command.CLIENT_CONNECT_DATA_CHANNEL, macAddress+Command.SEPARATOR+state);
-
                 LOG.I("向服务器告知状态..: "+state);
+                state = -1;//等待服务器信息中
             }else if (state == 10){
                 //请求服务器 ->
                 bytes = Command.createDatas(Command.NOTIFY_DATA_PORT, macAddress);
@@ -218,12 +217,14 @@ public class DataConnect extends ClientThread {
                     LOG.I("资源请求者,收到对方的地址信息:"+string);
                     String[] sarr = string.split(Command.SEPARATOR);
                     targetAddress = new InetSocketAddress(sarr[0],Integer.parseInt(sarr[1]));
+
                     //接下来尝试给对方发送握手包
                     state = 2;
             }else if (command == Command.AKC){
                 //收到握手包回执 里面有对方的mac信息 - 通道打通
                 LOG.I("收到握手回执 - 通道建立成功");
                 state = 3;
+                client.stopServerHrbt();//停止服务器心跳
             }else if (command == Command.FLG){
                 //携带资源的总大小 {FLG,文件大小long}
                 fileSize =Command.bytesToLong(bytes,1);
