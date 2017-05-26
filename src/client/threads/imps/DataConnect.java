@@ -198,9 +198,7 @@ public class DataConnect extends ClientThread {
         SocketAddress address = channel.receive(buffer);
         buffer.flip();
         byte tag = buffer.get();
-
         LOG.I("来自 - "+address.toString() +" 数据标识 :"+ tag);
-        if (tag==77) return;
         buffer.rewind();
     }
     
@@ -256,6 +254,7 @@ public class DataConnect extends ClientThread {
                     ByteBuffer buf = ByteBuffer.allocate(dataSize);
                     buf.put(bytes,5,dataSize);
                     buf.flip();
+                    fileChannel.position(position);
                     fileChannel.write(buf);
                     buf.clear();
                     position+=dataSize;

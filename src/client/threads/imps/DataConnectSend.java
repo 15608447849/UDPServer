@@ -28,6 +28,7 @@ public class DataConnectSend extends DataConnect {
             getData();
             byte[] bytes = buffer.array();
             byte command = bytes[0];
+
             if (command == Command.HRBT_DATA){
                 //收到服务心跳
                 state = 10;
@@ -75,7 +76,7 @@ public class DataConnectSend extends DataConnect {
                    //通知对方文件大小
                    state = 13;
                }
-            }else if (command == Command.SAVE){
+            }else if (command == Command.SAVE ){
                 //获取下标 传递数据
                 position = Command.bytesToLong(bytes,1);
                 LOG.I("收到指定文件位置 :" + position);
@@ -84,6 +85,8 @@ public class DataConnectSend extends DataConnect {
                 state = 14;
             }else if (command == Command.CLOSE){
                 state = 0;
+            }else if (command == 77){
+                sendDatas();
             }
         } catch (IOException e) {
             e.printStackTrace();
