@@ -8,7 +8,7 @@ import java.util.Date;
  */
 public class LOG {
     private static final String TAG = "日志";
-    public static final SimpleDateFormat dataFormat =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //.SSS
+    public static final SimpleDateFormat dataFormat =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //
     public static void I(String msg){
         System.out.println(TAG+" ["+getCurrentData()+"] "+msg);
     }

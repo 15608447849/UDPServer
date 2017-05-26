@@ -41,9 +41,11 @@ import java.util.Iterator;
  */
 public class Command {
     public static final String HOME_DIR = "C:/Users/user";
-    public static final int BUFF_LENGTH = 256;
-    public static final int DATA_BUFF_LENGTH = 4096;
+    public static final String DATA_SEPARATOR = "****";
     public static final String SEPARATOR = "@";
+    public static final int BUFF_LENGTH = 256;
+    public static final int DATA_LENGTH = 2048;
+    public static final int DATA_BUFF_LENGTH = DATA_LENGTH+1+4+DATA_SEPARATOR.getBytes().length;
     //客户端->服务器 心跳 -> 添加到在线用户中  例如:数据为  HA-89-99-00-09-56 -> byte[] , 长度:length=100 -> 0 0 0 100 > {1,0,0,0,100,数据字节....MAC} ->恢复心跳{1}
     public static final byte HRBT = 1;
     public static final byte HRBT_RESP=-10;
@@ -52,7 +54,7 @@ public class Command {
     // 随后这个客户端会开启一个端口建立和服务器数据端口的连接(打洞准备) ,服务器会收到  {7,长度,mac地址},如果在队列中找到同样的mac得客户端,并且状态码为1(请求状态), 则记录他的数据端口,并且回复一个心跳{2,长度,"查询中"}
     public static final byte CLIENT_SERVER_QUESY_SOURCE = 5;
     public static final byte NOTIFY_ALL_CLIENT_SOURCE = 6;
-    public static final byte CLIENT_CONNECT_DATA_CHANNEL = 7;
+    public static final byte CLIENT_CONNECT_DATA_CHANNEL = 7;//对数据端口发起的心跳
 
     //发送到所有客户端,查询是否存在这个资源,如果存在,请返回 {SOURCE_NOTITY10,数据长度,"请求资源的MAC@存在资源的mac@请求的资源名本地完整路径@状态码"} 进行绑定
     public static final byte SOURCE_NOTITY = 10;
@@ -75,7 +77,7 @@ public class Command {
     public static final byte DATA = 100;
     public static final byte SAVE = 101;//指定资源客户端的文件的起始点{save,起始点} long 型
     public static final byte CLOSE = 102;//
-    public static final String DATA_SEPARATOR = "****";
+
 
 
     public static void createDatas(byte[] bytes,ByteBuffer byteBuffer){

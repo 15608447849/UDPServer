@@ -155,13 +155,13 @@ public class ServerOps extends HashSet implements CheckThread.Action{
     public Map.Entry<UdpClient,UdpClient> findBindMac(String sMac) {
         try{
             lock.lock();
-            LOG.I("查询绑定数据端口队列");
             Iterator<Map.Entry<UdpClient,UdpClient>> itr = dataConnBindMap.entrySet().iterator();
             Map.Entry<UdpClient,UdpClient> entry;
             while (itr.hasNext()){
                 entry = itr.next();
 
                 if (entry.getKey().macAddress.equalsIgnoreCase(sMac)){
+                    itr.remove();// //删除绑定信息
                     return entry;
                 }
             }
@@ -178,7 +178,7 @@ public class ServerOps extends HashSet implements CheckThread.Action{
            UdpClient client;
             while (itr.hasNext()){
               client =  itr.next();
-              if (client.macAddress.equalsIgnoreCase(mac) && client.state==1 || client.state == 2){//请求中->连接上数据端口
+              if (client.macAddress.equalsIgnoreCase(mac) && client.state==1){//请求中->连接上数据端口|| client.state == 2
                   client.dataPort = dataPort;
                   client.state = 2;//已设置数据端口
                   return client;

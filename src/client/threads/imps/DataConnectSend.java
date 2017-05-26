@@ -73,8 +73,8 @@ public class DataConnectSend extends DataConnect {
                 //从下标开始获取数据
                 long csun = fileSize - position;
                 LOG.I("剩余文件大小:"+csun);
-               if (csun >= 2000){
-                       len = 2000 ;
+               if (csun >= Command.DATA_LENGTH){
+                       len = Command.DATA_LENGTH ;
                }else if (csun>0){
                    len = (int) csun;
                }
