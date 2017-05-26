@@ -63,7 +63,7 @@ public class DataConnect extends ClientThread {
             while (flag){
                 synchronized (buff){
                     try {
-                        buff.wait(10 * 1000);
+                        buff.wait(30 * 1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -81,6 +81,9 @@ public class DataConnect extends ClientThread {
         }
     });
 
+    public void startHrbt(){
+        hebtThread.start();
+    }
 
 
 
@@ -91,7 +94,6 @@ public class DataConnect extends ClientThread {
         channel = DatagramChannel.open();
         channel.bind(new InetSocketAddress(client.info.localIp,client.info.dataPort));
         buffer = ByteBuffer.allocate(Command.DATA_BUFF_LENGTH);
-        hebtThread.start();
         LOG.I("数据端口的连接创建完成. "+ serverAddress);
     }
 
@@ -168,31 +170,32 @@ public class DataConnect extends ClientThread {
 
      */
     
-    public byte[] getData() throws IOException {
+    public void getData() throws IOException {
+        if (state==0) return;
         //处理结果
         buffer.clear();
         SocketAddress address = channel.receive(buffer);
-        LOG.I("来自 - "+address.toString());
         buffer.flip();
-        byte[] datas = new byte[buffer.limit()];
+        bytes = new byte[buffer.limit()];
         while (buffer.hasRemaining()) {
-            buffer.get(datas);
+            buffer.get(bytes);
         }
         buffer.clear();
-        return datas;
+        LOG.I("来自 - "+address.toString() +" 数据:"+ bytes.length);
+        if (bytes[0]==77) return;
     }
     
     @Override
     protected void receiveMessage() {
         try {
-            if (state==0) return;
-            byte[] datas = getData();
-            byte command = datas[0];
-            if (command==77) return;
+
+            getData();
+            byte command = bytes[0];
+
             if (command == Command.SOUCE_QUERY_SUCCESS){
                 //对方的IP地址 {SOUCE_QUERY_SUCCESS,长度,"B_IP@B_port"}
-                    int dataLenth = Command.bytesToInt(datas,1);
-                    String string = Command.bytesToString(datas,5,dataLenth);
+                    int dataLenth = Command.bytesToInt(bytes,1);
+                    String string = Command.bytesToString(bytes,5,dataLenth);
                     LOG.I("资源请求者,收到对方的信息:"+string);
                     String[] sarr = string.split(Command.SEPARATOR);
                     targetAddress = new InetSocketAddress(sarr[0],Integer.parseInt(sarr[1]));
@@ -205,7 +208,7 @@ public class DataConnect extends ClientThread {
             }else if (command == Command.FLG){
                 if (rafile==null && fileChannel==null) {
                     //携带资源的总大小 {FLG,文件大小long}
-                    fileSize =Command.bytesToLong(datas,1);
+                    fileSize =Command.bytesToLong(bytes,1);
                     LOG.I("文件长度 : "+ fileSize+",本地文件路径:"+localPath);
                     rafile = new RandomAccessFile(localPath, "rw");
                     rafile.setLength(fileSize);
@@ -216,11 +219,11 @@ public class DataConnect extends ClientThread {
             }else if (command == Command.DATA){
                 //数据 {data,长度, ~~~~~~~~~~~~ ****}
 //                LOG.I("接受到数据 :"+ Arrays.toString(datas));
-                int dataSize = Command.bytesToInt(datas,1);
+                int dataSize = Command.bytesToInt(bytes,1);
                 LOG.I("长度 :"+dataSize);
                 String checkSpc = null;//检测符号
                 try {
-                    checkSpc = new String(datas,5+dataSize, Command.DATA_SEPARATOR.getBytes().length);
+                    checkSpc = new String(bytes,5+dataSize, Command.DATA_SEPARATOR.getBytes().length);
                 } catch (Exception e) {
                     checkSpc = "error";
                 }
@@ -229,7 +232,7 @@ public class DataConnect extends ClientThread {
                     LOG.I("开始写入进度");
 //                    lock = fileChannel.lock();//文件上锁
                     buffer.clear();
-                    buffer.put(datas,5,dataSize);
+                    buffer.put(bytes,5,dataSize);
                     buffer.flip();
                     int len =  fileChannel.write(buffer);
                     buffer.clear();

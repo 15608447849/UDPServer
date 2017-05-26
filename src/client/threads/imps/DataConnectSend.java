@@ -120,19 +120,19 @@ public class DataConnectSend extends DataConnect {
     @Override
     protected void receiveMessage() {
         try {
-            if (state==0) return;
-            byte[] datas = getData();
-            byte command = datas[0];
-            if (command==77) return;
+
+            getData();
+            byte command = bytes[0];
+
             if (command == Command.HRBT_DATA){
                 //收到服务心跳
                 LOG.I("收到服务器数据端口的心跳.");
                 state = 10;
             }else if (command == Command.SOUCE_QUERY_SUCCESS){
                 // {ip@port}
-                int dataLenth = Command.bytesToInt(datas,1);
+                int dataLenth = Command.bytesToInt(bytes,1);
 
-                String string = Command.bytesToString(datas,5,dataLenth);
+                String string = Command.bytesToString(bytes,5,dataLenth);
                 LOG.I("资源发送者获取到对方的 信息: "+string);
                 String[] sarr = string.split(Command.SEPARATOR);
                 targetAddress = new InetSocketAddress(sarr[0],Integer.parseInt(sarr[1]));
@@ -158,8 +158,8 @@ public class DataConnectSend extends DataConnect {
             }
             else if (command == Command.AKC){
                 //收到对方的回执信息 - 包含本地资源的全路径
-                int len = Command.bytesToInt(datas,1);
-                localPath = Command.bytesToString(datas,5,len);
+                int len = Command.bytesToInt(bytes,1);
+                localPath = Command.bytesToString(bytes,5,len);
                 LOG.I("本地文件 - "+localPath);
                 //获取文件流
                if (rafile==null
@@ -174,7 +174,7 @@ public class DataConnectSend extends DataConnect {
                 state = 13;
             }else if (command == Command.SAVE){
                 //获取下标 传递数据
-                position = Command.bytesToLong(datas,1);
+                position = Command.bytesToLong(bytes,1);
                 LOG.I("当前下标 - " + position);
                 state = 14;
             }else if (command == Command.CLOSE){
