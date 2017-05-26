@@ -69,12 +69,14 @@ public class DataConnectSend extends DataConnect {
                 //发送 文件 大小
                 bytes = Command.createDatas(Command.FLG,fileSize);
             }if (state == 14){
-                int len=0;
+                int len = 0;
                 //从下标开始获取数据
-               if ((fileSize - position) > 1000){
-                       len =1000;
-               }else{
-                   len = (int) (fileSize-position);
+                long csun = fileSize - position;
+                LOG.I("剩余文件大小:"+csun);
+               if (csun >= 3000){
+                       len = 3000 ;
+               }else if (csun>0){
+                   len = (int) csun;
                }
                if (len==0) return;
                LOG.I("传输大小:"+len);
@@ -83,13 +85,18 @@ public class DataConnectSend extends DataConnect {
                 bytes = new byte[1+lenby.length+len+strArr.length];
                 bytes[0] = Command.DATA;
                 System.arraycopy(lenby, 0, bytes, 1, lenby.length); //
-                mappedByteBuffer.get(bytes,1+lenby.length,len);
-
-                System.arraycopy(strArr, 0, bytes, 1+lenby.length + len , strArr.length);
+                try {
+                    mappedByteBuffer.get(bytes,1+lenby.length,len);
+                    System.arraycopy(strArr, 0, bytes, 1+lenby.length + len , strArr.length);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                LOG.I("传输完成.");
             }
 
             Command.createDatas(bytes,buffer);
             channel.send(buffer,targetAddress);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

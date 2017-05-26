@@ -40,7 +40,7 @@ import java.util.Iterator;
 public class Command {
     public static final String HOME_DIR = "C:/Users/user";
     public static final int BUFF_LENGTH = 256;
-    public static final int DATA_BUFF_LENGTH = 2200;
+    public static final int DATA_BUFF_LENGTH = 4096;
     public static final String SEPARATOR = "@";
     //客户端->服务器 心跳 -> 添加到在线用户中  例如:数据为  HA-89-99-00-09-56 -> byte[] , 长度:length=100 -> 0 0 0 100 > {1,0,0,0,100,数据字节....MAC} ->恢复心跳{1}
     public static final byte HRBT = 1;
@@ -131,7 +131,13 @@ public class Command {
     }
 
     public static String bytesToString(byte[] bytes,int position,int length){
-            return  new String(bytes, position, length);
+
+        try{
+            return new String(bytes, position, length);
+        }catch (Exception e){
+            LOG.I("解析String 错误, - "+ e.getMessage() + " bytes.length = "+ bytes.length +" position:"+position+",length = "+length);
+        }
+        return "!";
     }
 
     //发送消息
