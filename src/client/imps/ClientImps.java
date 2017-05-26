@@ -100,4 +100,16 @@ public class ClientImps {
         }
     }
 
+    public void stopHHRBT(){
+        threadMap.get("keepAliveThread").setFlag(false);
+    }
+    public void startHRBT(){
+        threadMap.get("keepAliveThread").setFlag(true);
+    }
+
+
+
+
+
+
 }

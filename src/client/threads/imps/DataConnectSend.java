@@ -145,7 +145,8 @@ public class DataConnectSend extends DataConnect {
                     state = 12;
                     LOG.I("发送回执");
                 }
-
+                //停止对服务器的心跳
+                client.stopHHRBT();
             }
             else if (command == Command.AKC){
                 //收到对方的回执信息 - 包含本地资源的全路径

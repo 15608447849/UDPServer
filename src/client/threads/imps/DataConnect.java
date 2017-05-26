@@ -164,6 +164,8 @@ public class DataConnect extends ClientThread {
             }else if (command == Command.AKC){
                 //收到握手包回执 里面有对方的mac信息
                 state = 3;
+                //停止对服务器的心跳
+                client.stopHHRBT();
             }else if (command == Command.FLG){
                 if (rafile==null && fileChannel==null) {
                     //携带资源的总大小 {FLG,文件大小long}
@@ -230,6 +232,7 @@ public class DataConnect extends ClientThread {
             }
         }
         deleteOnMap();
+        client.startHRBT();
     }
     public void deleteOnMap(){
         client.threadMap.remove("request");

@@ -33,8 +33,10 @@ public class KeepConnect extends ClientThread {
         while (true){
             synchronized (channel){
                 try {
-                    //发送心跳
-                    sendHrbt();
+                    if (flag){
+                        //发送心跳
+                        sendHrbt();
+                    }
                     channel.wait(time * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
