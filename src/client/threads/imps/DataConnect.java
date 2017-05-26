@@ -197,6 +197,14 @@ public class DataConnect extends ClientThread {
     @Override
     protected void stopSelf() {
         super.stopSelf();
+        if (rafile!=null){
+            try {
+                rafile.close();
+            } catch (IOException e) {
+            } finally {
+                rafile = null;
+            }
+        }
         if (fileChannel!=null){
             try {
                 fileChannel.close();
@@ -205,13 +213,6 @@ public class DataConnect extends ClientThread {
                 fileChannel = null;
             }
         }
-        if (rafile!=null){
-            try {
-                fileChannel.close();
-            } catch (IOException e) {
-            } finally {
-                fileChannel = null;
-            }
-        }
+
     }
 }

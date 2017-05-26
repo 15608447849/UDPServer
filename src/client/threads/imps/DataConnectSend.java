@@ -76,6 +76,7 @@ public class DataConnectSend extends DataConnect {
                }else{
                    len = (int) (fileSize-position);
                }
+               if (len==0) return;
                LOG.I("传输大小:"+len);
                 byte[] lenby = Command.intToBytes(len);
                 byte [] strArr = Command.DATA_SEPARATOR.getBytes();
