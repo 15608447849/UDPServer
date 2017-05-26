@@ -9,10 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.net.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -144,6 +141,7 @@ public class DataConnect extends ClientThread {
                 //发送postion
                 bytes = Command.createDatas(Command.SAVE, position);//发送下标
                 LOG.I("发送下标:"+position);
+                state = 14;
             }else if (state == 5){
                 //通知目标关闭通道
                bytes = Command.createDatas(Command.CLOSE,macAddress);
@@ -171,7 +169,8 @@ public class DataConnect extends ClientThread {
     public byte[] getData() throws IOException {
         //处理结果
         buffer.clear();
-        channel.receive(buffer);
+        SocketAddress address = channel.receive(buffer);
+        LOG.I("来自 - "+address.toString());
         buffer.flip();
         byte[] datas = new byte[buffer.limit()];
         while (buffer.hasRemaining()) {
@@ -186,6 +185,7 @@ public class DataConnect extends ClientThread {
         try {
             if (state==0) return;
             byte[] datas = getData();
+            LOG.I("接受到数据 :"+Arrays.toString(datas));
             byte command = datas[0];
             if (command == Command.SOUCE_QUERY_SUCCESS){
                 //对方的IP地址 {SOUCE_QUERY_SUCCESS,长度,"B_IP@B_port"}

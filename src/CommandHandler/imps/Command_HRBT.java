@@ -28,9 +28,12 @@ public class Command_HRBT implements ICommand {
             UdpClient client = serverImps.opration.addClient(senderIp,senderPort,data);//添加客户端
             if (client!=null){
 
-                //返回结果给客户端 - 维持生命周期
-                Command.sendMessage(channel, new InetSocketAddress(client.inetAddress,client.inetPort), Command.HRBT_RESP);
-               // LOG.I("客户端存活 - "+client+" , 当前在线数:" + serverImps.opration.getOnliNunber() + channel);
+                if (client.state == 0){
+                    //返回结果给客户端 - 维持生命周期
+                    Command.sendMessage(channel, new InetSocketAddress(client.inetAddress,client.inetPort), Command.HRBT_RESP);
+                     LOG.I("客户端存活 - "+client+" , 当前在线数:" + serverImps.opration.getOnliNunber() + channel);
+                }
+
             }
         }catch (Exception e){
             e.printStackTrace();

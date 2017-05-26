@@ -70,7 +70,8 @@ public class DataConnectSend extends DataConnect {
                 //发送 文件 大小
                 bytes = Command.createDatas(Command.FLG,fileSize);
             }if (state == 14){
-
+                 //发送数据
+                buffer.clear();
                 int len = 0;
                 //从下标开始获取数据
                 long csun = fileSize - position;
@@ -80,23 +81,29 @@ public class DataConnectSend extends DataConnect {
                }else if (csun>0){
                    len = (int) csun;
                }
-               if (len==0) return;
-
+                buffer.put( Command.DATA);
                 byte[] lenby = Command.intToBytes(len);
-                byte [] strArr = Command.DATA_SEPARATOR.getBytes();
-                bytes = new byte[1+lenby.length+len+strArr.length];
-                bytes[0] = Command.DATA;
-                System.arraycopy(lenby, 0, bytes, 1, lenby.length); //
+                for (int i= 0;i<lenby.length;i++){
+                    buffer.put(lenby[i]);
+                }
+//                byte [] strArr = Command.DATA_SEPARATOR.getBytes();//分隔符
+//                System.arraycopy(lenby, 0, bytes, 1, lenby.length); //
                 try {
-                    fileChannel.position(position);//移动
+                    fileChannel.position(position);//移动到下标
                     mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, len);
-                    for (int offset = (1+lenby.length);offset<len;offset++){
-                        bytes[offset] = mappedByteBuffer.get();
+                    buffer.put(mappedByteBuffer);
+                    byte [] strArr = Command.DATA_SEPARATOR.getBytes();//分隔符
+                    for (int i = 0;i<strArr.length;i++){
+                        buffer.put(strArr[i]);
                     }
-                    System.arraycopy(strArr, 0, bytes, 1+lenby.length + len , strArr.length);
+                    //System.arraycopy(strArr, 0, bytes, 1+lenby.length + len , strArr.length);
+                    LOG.I("传输数据大小:"+buffer.limit());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                buffer.flip();
+                channel.send(buffer,targetAddress);
+                return;
             }
 
             if (targetAddress!=null){
@@ -168,7 +175,7 @@ public class DataConnectSend extends DataConnect {
             }else if (command == Command.SAVE){
                 //获取下标 传递数据
                 position = Command.bytesToLong(datas,1);
-                LOG.I("下标 - " + position);
+                LOG.I("当前下标 - " + position);
                 state = 14;
             }else if (command == Command.CLOSE){
                 state = 0;

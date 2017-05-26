@@ -40,7 +40,7 @@ public class ClientQuestBindClient implements ICommand {
             UdpClient scr = entry.getKey();
             UdpClient des = entry.getValue();
             Command.sendMessage(channel,new InetSocketAddress(des.inetAddress,des.dataPort),Command.SOUCE_QUERY_SUCCESS,scr.inetAddress.getHostAddress()+Command.SEPARATOR+scr.dataPort);
-            LOG.I("告知 资源索取者 ->"+ scr.inetAddress+scr.dataPort);
+            LOG.I("告知 资源索取者 ->"+ scr.inetAddress+"-"+scr.dataPort);
             synchronized (this){
                 try {
                     this.wait( 1000 );
@@ -49,7 +49,7 @@ public class ClientQuestBindClient implements ICommand {
                 }
             }
             Command.sendMessage(channel,new InetSocketAddress(scr.inetAddress,scr.dataPort),Command.SOUCE_QUERY_SUCCESS,des.inetAddress.getHostAddress()+Command.SEPARATOR+des.dataPort);
-            LOG.I("告知 资源存在者 ->"+ des.inetAddress+des.dataPort);
+            LOG.I("告知 资源存在者 ->"+ des.inetAddress+"-"+des.dataPort);
 
         }
     }
